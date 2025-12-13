@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">LocalGrub(Shop)</string>
+
+    <!-- No Internet Dialog -->
+    <string name="no_internet_connection">No Internet Connection</string>
+    <string name="check_internet_connection">Please check your internet connection and try again.</string>
+    <string name="ok">OK</string>
+</resources>
