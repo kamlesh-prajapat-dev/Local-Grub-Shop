@@ -1,4 +1,4 @@
-package com.example.localgrubshop.ui.viewmodel
+package com.example.localgrubshop.ui.sharedviewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.localgrubshop.data.models.Order

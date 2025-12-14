@@ -1,4 +1,4 @@
-package com.example.localgrubshop.ui.fragment
+package com.example.localgrubshop.ui.screens.eachorderstatus
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,11 +11,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.databinding.FragmentEachOrderStatusBinding
-import com.example.localgrubshop.domain.models.FoodItem
 import com.example.localgrubshop.domain.models.OrderHistoryResult
 import com.example.localgrubshop.ui.adapter.OrderSummaryAdapter
-import com.example.localgrubshop.ui.viewmodel.EachOrderStatusViewModel
-import com.example.localgrubshop.ui.viewmodel.SharedHFToEOSFViewModel
+import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
 import com.example.localgrubshop.utils.Constant
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -61,7 +59,7 @@ class EachOrderStatusFragment : Fragment() {
                     binding.phoneNumberTextView.text = order.userPhoneNumber
                     binding.addressTextView.text = order.userAddress
 
-                    val deliveryFee = 50.0 // Replace with your delivery fee logic
+                    val deliveryFee = 0.0 // Replace with your delivery fee logic
                     binding.itemTotalTextView.text = "Rs. ${order.totalPrice}"
                     binding.deliveryFeeTextView.text = "Rs. $deliveryFee"
                     binding.grandTotalTextView.text = "Rs. ${order.totalPrice + deliveryFee}"
@@ -92,9 +90,9 @@ class EachOrderStatusFragment : Fragment() {
                 else -> null
             }
 
-            val orderId = viewModel.order.value?.id
-            if (nextStatus != null && orderId != null) {
-                viewModel.updateOrderStatus(orderId, nextStatus!!)
+            val order = viewModel.order.value
+            if (nextStatus != null && order != null) {
+                viewModel.updateOrderStatus(order, nextStatus!!)
             }
 
         }

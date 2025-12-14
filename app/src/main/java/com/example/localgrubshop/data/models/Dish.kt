@@ -1,6 +1,6 @@
 package com.example.localgrubshop.data.models
 
-data class Dishes(
+data class Dish(
     val id: String = "",
     val name: String = "",
     val description: String = "",

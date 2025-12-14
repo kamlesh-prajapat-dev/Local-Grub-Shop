@@ -12,13 +12,13 @@ class ShopOwnerRepositoryImpl @Inject constructor(
     private val firebaseFirestore: FirebaseFirestore,
     private val localHelper: LocalHelper
 ) : ShopOwnerRepository {
+    private val docId = "ykqsYYKVJ8wNJ4UrvKKm"
+
     override suspend fun saveFCMToken(
         token: String,
         onResult: (Boolean) -> Unit
     ) {
         try {
-            val docId = "ykqsYYKVJ8wNJ4UrvKKm"
-
             firebaseFirestore.collection("owners").document(docId).update(mapOf("token" to token))
                 .await()
 
@@ -26,6 +26,19 @@ class ShopOwnerRepositoryImpl @Inject constructor(
             onResult(true)
         } catch (e: Exception) {
             onResult(false)
+        }
+    }
+
+    override suspend fun getFCMToken(
+        onResult: (String) -> Unit
+    ) {
+        try {
+            firebaseFirestore.collection("owners").document(docId).get().await()
+                .getString("token")?.let {
+                    onResult(it)
+                }
+        } catch (e: Exception) {
+            onResult("")
         }
     }
 }

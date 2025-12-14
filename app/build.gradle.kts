@@ -9,6 +9,9 @@ plugins {
     // Ksp plugin and Dagger hilt plugin
     alias(libs.plugins.kotlinKsp)
     alias(libs.plugins.hiltAndroid)
+
+    // Kotlin Serialization Plugin
+    kotlin("plugin.serialization") version "2.2.21"
 }
 
 android {
@@ -55,6 +58,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.fragment.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -82,4 +87,16 @@ dependencies {
 
     // Glide Library For image
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    // Cloudinary
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+
+    // Kotlin Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation("com.squareup.okhttp3:okhttp")
+
 }

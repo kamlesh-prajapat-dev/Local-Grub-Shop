@@ -1,4 +1,4 @@
-package com.example.localgrubshop.ui.fragment
+package com.example.localgrubshop.ui.components
 
 import android.app.DatePickerDialog
 import android.os.Bundle

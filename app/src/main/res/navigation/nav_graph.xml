@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/splashFragment"
-        android:name="com.example.localgrubshop.ui.fragment.SplashFragment"
+        android:name="com.example.localgrubshop.ui.screens.splash.SplashFragment"
         android:label="Splash Fragment"
         tools:layout="@layout/fragment_splash">
 
@@ -20,7 +20,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.localgrubshop.ui.fragment.HomeFragment"
+        android:name="com.example.localgrubshop.ui.screens.home.HomeFragment"
         android:label="Home Fragment"
         tools:layout="@layout/fragment_home" >
 
@@ -35,15 +35,26 @@
 
     <fragment
         android:id="@+id/menuFragment"
-        android:name="com.example.localgrubshop.ui.fragment.MenuFragment"
+        android:name="com.example.localgrubshop.ui.screens.menu.MenuFragment"
         android:label="History Fragment"
         tools:layout="@layout/fragment_menu">
+
+        <action
+            android:id="@+id/action_menuFragment_to_dishFragment"
+            app:destination="@id/dishFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/dishFragment"
+        android:name="com.example.localgrubshop.ui.screens.dish.DishFragment"
+        android:label="Edit Dish Fragment"
+        tools:layout="@layout/fragment_dish">
 
     </fragment>
 
     <fragment
         android:id="@+id/eachOrderStatusFragment"
-        android:name="com.example.localgrubshop.ui.fragment.EachOrderStatusFragment"
+        android:name="com.example.localgrubshop.ui.screens.eachorderstatus.EachOrderStatusFragment"
         android:label="Each Order Status Fragment"
         tools:layout="@layout/fragment_each_order_status">
     </fragment>

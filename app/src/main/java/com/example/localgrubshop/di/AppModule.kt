@@ -2,6 +2,7 @@ package com.example.localgrubshop.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.localgrubshop.domain.repository.NotificationRepository
 import com.example.localgrubshop.utils.NetworkUtils
 import com.example.localgrubshop.utils.NotificationHelper
 import dagger.Module
@@ -31,5 +32,11 @@ object AppModule {
     @Singleton
     fun provideNotificationHelper(): NotificationHelper {
         return NotificationHelper()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationRepository(): NotificationRepository {
+        return NotificationRepository()
     }
 }

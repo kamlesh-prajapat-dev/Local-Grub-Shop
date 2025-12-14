@@ -1,4 +1,4 @@
-package com.example.localgrubshop.ui.viewmodel
+package com.example.localgrubshop.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -63,8 +63,6 @@ class HomeViewModel @Inject constructor(
                             _errorMessage.value = "Failed to save token"
                         }
                     }
-                } else {
-
                 }
             } else {
                 val token = async { TokenManager.getFCMToken() }.await()

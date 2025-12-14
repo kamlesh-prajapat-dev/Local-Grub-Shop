@@ -1,4 +1,4 @@
-package com.example.localgrubshop.ui.fragment
+package com.example.localgrubshop.ui.screens.home
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -16,8 +16,8 @@ import com.example.localgrubshop.R
 import com.example.localgrubshop.databinding.FragmentHomeBinding
 import com.example.localgrubshop.domain.models.OrderHistoryResult
 import com.example.localgrubshop.ui.adapter.OrderHistoryAdapter
-import com.example.localgrubshop.ui.viewmodel.HomeViewModel
-import com.example.localgrubshop.ui.viewmodel.SharedHFToEOSFViewModel
+import com.example.localgrubshop.ui.components.FilterBottomSheetFragment
+import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Date

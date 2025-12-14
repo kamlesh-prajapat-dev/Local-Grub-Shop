@@ -1,4 +1,4 @@
-package com.example.localgrubshop.ui.fragment
+package com.example.localgrubshop.ui.screens.splash
 
 import android.os.Bundle
 import android.view.LayoutInflater

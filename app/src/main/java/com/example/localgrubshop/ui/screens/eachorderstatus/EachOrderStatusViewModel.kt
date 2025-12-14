@@ -1,8 +1,7 @@
-package com.example.localgrubshop.ui.viewmodel
+package com.example.localgrubshop.ui.screens.eachorderstatus
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.localgrubshop.data.models.Dishes
 import com.example.localgrubshop.data.models.Order
 import com.example.localgrubshop.domain.models.OrderHistoryResult
 import com.example.localgrubshop.domain.repository.OrderRepository
@@ -32,10 +31,10 @@ class EachOrderStatusViewModel @Inject constructor(
         _order.value = order
     }
 
-    fun updateOrderStatus(orderId: String, newStatus: String) {
+    fun updateOrderStatus(order: Order, newStatus: String) {
         viewModelScope.launch {
             _updateStatusResult.value = OrderHistoryResult.Loading
-            orderRepository.updateOrderStatus(orderId, newStatus) {
+            orderRepository.updateOrderStatus(order, newStatus) {
                 _updateStatusResult.value = it
             }
         }
