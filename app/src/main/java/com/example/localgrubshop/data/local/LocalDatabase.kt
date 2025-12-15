@@ -6,7 +6,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LocalHelper @Inject constructor(
+class LocalDatabase @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) {
     companion object {

@@ -2,7 +2,7 @@ package com.example.localgrubshop.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.localgrubshop.data.local.LocalHelper
+import com.example.localgrubshop.data.local.LocalDatabase
 import com.example.localgrubshop.data.models.Order
 import com.example.localgrubshop.domain.models.OrderHistoryResult
 import com.example.localgrubshop.domain.repository.OrderRepository
@@ -22,7 +22,7 @@ class HomeViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
     private val networkUtils: NetworkUtils,
     private val shopOwnerRepository: ShopOwnerRepository,
-    private val localHelper: LocalHelper
+    private val localDatabase: LocalDatabase
 ) : ViewModel() {
 
     private val _isNetworkAvailable = MutableStateFlow(true)
@@ -51,20 +51,8 @@ class HomeViewModel @Inject constructor(
 
     fun saveFCMToken() {
         viewModelScope.launch(Dispatchers.IO) {
-            val localToken = localHelper.getToken()
-            if (localToken != null) {
-                val token = async { TokenManager.getFCMToken() }.await()
-
-                if (token != null && token.isNotEmpty() && token != localToken) {
-                    shopOwnerRepository.saveFCMToken(token) {
-                        if (it) {
-                            _errorMessage.value = "Token saved successfully"
-                        } else {
-                            _errorMessage.value = "Failed to save token"
-                        }
-                    }
-                }
-            } else {
+            val localToken = localDatabase.getToken()
+            if (localToken == null) {
                 val token = async { TokenManager.getFCMToken() }.await()
 
                 if (token != null && token.isNotEmpty()) {
@@ -76,6 +64,8 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
+            } else {
+                _errorMessage.value = "Token already saved."
             }
         }
     }

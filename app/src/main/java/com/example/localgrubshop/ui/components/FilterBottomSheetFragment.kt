@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.localgrubshop.databinding.BottomSheetFilterBinding
+import com.example.localgrubshop.utils.Constant
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -48,11 +49,11 @@ class FilterBottomSheetFragment(
         binding.applyButton.setOnClickListener {
             val selectedStatus = when (binding.statusChipGroup.checkedChipId) {
                 binding.chipAll.id -> null
-                binding.chipPlaced.id -> "Placed"
-                binding.chipConfirmed.id -> "Confirmed"
-                binding.chipPreparing.id -> "Preparing"
-                binding.chipOutForDelivery.id -> "Out for Delivery"
-                binding.chipDelivered.id -> "Delivered"
+                binding.chipPlaced.id -> Constant.PLACED.name
+                binding.chipConfirmed.id -> Constant.CONFIRMED.name
+                binding.chipPreparing.id -> Constant.PREPARING.name
+                binding.chipOutForDelivery.id -> Constant.OUT_FOR_DELIVERY.name
+                binding.chipDelivered.id -> Constant.DELIVERED.name
                 else -> null
             }
             onFilterSelected(selectedStatus, startDate, endDate)

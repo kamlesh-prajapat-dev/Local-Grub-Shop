@@ -1,8 +1,9 @@
 package com.example.localgrubshop.data.repository
 
-import com.example.localgrubshop.data.local.LocalHelper
+import com.example.localgrubshop.data.local.LocalDatabase
 import com.example.localgrubshop.domain.repository.ShopOwnerRepository
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -10,19 +11,27 @@ import javax.inject.Singleton
 @Singleton
 class ShopOwnerRepositoryImpl @Inject constructor(
     private val firebaseFirestore: FirebaseFirestore,
-    private val localHelper: LocalHelper
+    private val localDatabase: LocalDatabase
 ) : ShopOwnerRepository {
-    private val docId = "ykqsYYKVJ8wNJ4UrvKKm"
 
-    override suspend fun saveFCMToken(
-        token: String,
-        onResult: (Boolean) -> Unit
-    ) {
+    private var docId: String? = null
+
+
+    override suspend fun saveFCMToken(token: String, onResult: (Boolean) -> Unit) {
         try {
-            firebaseFirestore.collection("owners").document(docId).update(mapOf("token" to token))
+            firebaseFirestore
+                .collection("owners")
+                .document("SHOP_OWNER")
+                .set(
+                    mapOf(
+                        "token" to token,
+                        "shop_owner" to true
+                    ),
+                    SetOptions.merge()
+                )
                 .await()
 
-            localHelper.setToken(token)
+            localDatabase.setToken(token)
             onResult(true)
         } catch (e: Exception) {
             onResult(false)
@@ -33,10 +42,13 @@ class ShopOwnerRepositoryImpl @Inject constructor(
         onResult: (String) -> Unit
     ) {
         try {
-            firebaseFirestore.collection("owners").document(docId).get().await()
-                .getString("token")?.let {
-                    onResult(it)
-                }
+            val docId = this.docId
+            if (docId != null) {
+                firebaseFirestore.collection("owners").document(docId).get().await()
+                    .getString("token")?.let {
+                        onResult(it)
+                    }
+            }
         } catch (e: Exception) {
             onResult("")
         }

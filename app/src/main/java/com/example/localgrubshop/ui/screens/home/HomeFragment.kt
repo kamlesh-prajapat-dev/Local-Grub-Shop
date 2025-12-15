@@ -20,6 +20,7 @@ import com.example.localgrubshop.ui.components.FilterBottomSheetFragment
 import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.Date
 
 @AndroidEntryPoint
@@ -86,18 +87,34 @@ class HomeFragment : Fragment() {
         orderHistoryAdapter.submitList(filteredList)
     }
 
-    private fun isDateInRange(date: Date, startDate: Date?, endDate: Date?): Boolean {
-        if (startDate == null && endDate == null) return true
-        if (startDate != null && endDate != null) {
-            return date.after(startDate) && date.before(endDate)
+    private fun isDateInRange(
+        date: Date,
+        startDate: Date?,
+        endDate: Date?
+    ): Boolean {
+
+        val d = date.clearTime()
+        val start = startDate?.clearTime()
+        val end = endDate?.clearTime()
+
+        if (start == null && end == null) return true
+        if (start != null && end != null) {
+            return !d.before(start) && !d.after(end)
         }
-        if (startDate != null) {
-            return date.after(startDate)
+        if (start != null) {
+            return !d.before(start)
         }
-        if (endDate != null) {
-            return date.before(endDate)
-        }
-        return false
+        return !d.after(end)
+    }
+
+    private fun Date.clearTime(): Date {
+        val cal = Calendar.getInstance()
+        cal.time = this
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return cal.time
     }
 
     private fun showPopupMenu(anchorView: View) {
