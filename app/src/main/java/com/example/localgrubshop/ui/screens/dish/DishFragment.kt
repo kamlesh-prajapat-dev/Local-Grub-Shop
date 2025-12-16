@@ -1,5 +1,6 @@
 package com.example.localgrubshop.ui.screens.dish
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
@@ -61,15 +62,17 @@ class DishFragment : Fragment() {
             val name = binding.dishNameEditText.text.toString().trim()
             val description = binding.descriptionEditText.text.toString().trim()
             val price = binding.priceEditText.text.toString().toDoubleOrNull()
+            val isAvailable = binding.availabilitySwitch.isChecked
 
             if (name.isNotEmpty() && description.isNotEmpty() && price != null) {
-                viewModel.saveDish(name, description, price, imageUri ?: viewModel.dish.value?.thumbnail?.toUri())
+                viewModel.saveDish(name = name, description = description, price = price, imageUri = imageUri ?: viewModel.dish.value?.thumbnail?.toUri(), isAvailable = isAvailable)
             } else {
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             sharedMDViewModel.dish.collect {

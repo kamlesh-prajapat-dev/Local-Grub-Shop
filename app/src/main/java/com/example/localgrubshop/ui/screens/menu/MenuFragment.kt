@@ -13,7 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.R
-import com.example.localgrubshop.data.models.Dish
+import com.example.localgrubshop.data.models.OldDish
 import com.example.localgrubshop.databinding.FragmentMenuBinding
 import com.example.localgrubshop.ui.adapter.MenuAdapter
 import com.example.localgrubshop.ui.sharedviewmodel.SharedMDViewModel
@@ -128,7 +128,7 @@ class MenuFragment : Fragment() {
         }
     }
 
-    private fun showDeleteConfirmationDialog(dish: Dish) {
+    private fun showDeleteConfirmationDialog(dish: OldDish) {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Item")
             .setMessage("Are you sure you want to delete ${dish.name}?")

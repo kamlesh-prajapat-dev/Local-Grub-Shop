@@ -7,14 +7,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.localgrubshop.R
-import com.example.localgrubshop.data.models.Dish
+import com.example.localgrubshop.data.models.OldDish
 import com.example.localgrubshop.databinding.FoodItemCardBinding
 
 class MenuAdapter(
-    private val onEditClick: (Dish) -> Unit,
-    private val onDeleteClick: (Dish) -> Unit,
-    private val onStockChange: (Dish, Boolean) -> Unit
-) : ListAdapter<Dish, MenuAdapter.MenuViewHolder>(DishDiffCallback()) {
+    private val onEditClick: (OldDish) -> Unit,
+    private val onDeleteClick: (OldDish) -> Unit,
+    private val onStockChange: (OldDish, Boolean) -> Unit
+) : ListAdapter<OldDish, MenuAdapter.MenuViewHolder>(DishDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuViewHolder {
         val binding = FoodItemCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -28,7 +28,7 @@ class MenuAdapter(
     inner class MenuViewHolder(private val binding: FoodItemCardBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(dish: Dish) {
+        fun bind(dish: OldDish) {
             binding.dishNameTextView.text = dish.name
             binding.priceTextView.text = "Rs. ${dish.price}"
             binding.descriptionTextView.text = dish.description
@@ -63,12 +63,12 @@ class MenuAdapter(
         }
     }
 
-    class DishDiffCallback : DiffUtil.ItemCallback<Dish>() {
-        override fun areItemsTheSame(oldItem: Dish, newItem: Dish): Boolean {
+    class DishDiffCallback : DiffUtil.ItemCallback<OldDish>() {
+        override fun areItemsTheSame(oldItem: OldDish, newItem: OldDish): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: Dish, newItem: Dish): Boolean {
+        override fun areContentsTheSame(oldItem: OldDish, newItem: OldDish): Boolean {
             return oldItem == newItem
         }
     }

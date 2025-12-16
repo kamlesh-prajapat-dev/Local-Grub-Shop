@@ -2,7 +2,7 @@ package com.example.localgrubshop.ui.screens.menu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.localgrubshop.data.models.Dish
+import com.example.localgrubshop.data.models.OldDish
 import com.example.localgrubshop.domain.repository.MenuRepository
 import com.example.localgrubshop.utils.NetworkUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,11 +23,11 @@ class MenuViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<MenuUIState>(MenuUIState.Idle)
     val uiState: StateFlow<MenuUIState> get() = _uiState.asStateFlow()
 
-    private val _menuItems = MutableStateFlow<List<Dish>>(emptyList())
-    val menuItems: StateFlow<List<Dish>> get() = _menuItems.asStateFlow()
+    private val _menuItems = MutableStateFlow<List<OldDish>>(emptyList())
+    val menuItems: StateFlow<List<OldDish>> get() = _menuItems.asStateFlow()
 
-    fun onSetMenuItems(dishes: List<Dish>) {
-        _menuItems.update { dishes }
+    fun onSetMenuItems(newDishes: List<OldDish>) {
+        _menuItems.update { newDishes }
     }
 
     fun loadMenu() {
@@ -42,7 +42,7 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    fun updateStockStatus(dish: Dish, inStock: Boolean) {
+    fun updateStockStatus(dish: OldDish, inStock: Boolean) {
         _uiState.update { MenuUIState.Loading }
         if (networkUtils.isInternetAvailable()) {
             viewModelScope.launch {
@@ -54,7 +54,7 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    fun deleteMenuItem(dish: Dish) {
+    fun deleteMenuItem(dish: OldDish) {
         _uiState.update { MenuUIState.Loading }
         if (networkUtils.isInternetAvailable()) {
             viewModelScope.launch {

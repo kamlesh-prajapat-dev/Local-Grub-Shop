@@ -1,6 +1,7 @@
 package com.example.localgrubshop.data.remote.firebase.repository
 
-import com.example.localgrubshop.data.models.Dish
+import com.example.localgrubshop.data.models.NewDish
+import com.example.localgrubshop.data.models.OldDish
 import com.example.localgrubshop.domain.repository.MenuRepository
 import com.example.localgrubshop.ui.screens.dish.DishUIState
 import com.example.localgrubshop.ui.screens.menu.MenuUIState
@@ -30,45 +31,42 @@ class MenuRepositoryImpl @Inject constructor(
                 return MenuUIState.Success(emptyList())
             }
 
-            val dish = document.map {
-                Dish(
+            val dishes = document.map {
+                OldDish(
                     id = it.id,
                     name = it.getString(DishFields.NAME) ?: "",
                     description = it.getString(DishFields.DESCRIPTION) ?: "",
                     price = it.getLong(DishFields.PRICE)?.toInt() ?: 0,
                     thumbnail = it.getString(DishFields.THUMBNAIL) ?: "",
                     isAvailable = it.getBoolean(DishFields.IN_STOCK) ?: false,
-                    quantity = 0
                 )
             }
-            MenuUIState.Success(dish)
+            MenuUIState.Success(dishes)
         } catch (e: Exception) {
             MenuUIState.Failure(e.message ?: "Unknown error")
         }
     }
 
-    override suspend fun getDish(dishId: String): Dish? {
+    override suspend fun addDish(newDish: NewDish): DishUIState {
         return try {
-            val snapshot = firestore.collection(DishFields.COLLECTION).document(dishId).get().await()
-            snapshot.toObject(Dish::class.java)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    override suspend fun addDish(dish: Dish): DishUIState {
-        return try {
-            firestore.collection(DishFields.COLLECTION).add(dish).await()
-            DishUIState.Success(dish)
+            val dish = firestore.collection(DishFields.COLLECTION).add(newDish).await()
+            DishUIState.Success(OldDish(
+                id = dish.id,
+                name = newDish.name,
+                description = newDish.description,
+                price = newDish.price,
+                thumbnail = newDish.thumbnail,
+                isAvailable = newDish.isAvailable
+            ))
         } catch (e: Exception) {
             DishUIState.Failure(e.message ?: "Unknown error")
         }
     }
 
-    override suspend fun updateDish(dish: Dish): DishUIState {
+    override suspend fun updateDish(newDish: OldDish): DishUIState {
         return try {
-            firestore.collection(DishFields.COLLECTION).document(dish.id).set(dish).await()
-            DishUIState.Success(dish)
+            firestore.collection(DishFields.COLLECTION).document(newDish.id).set(newDish).await()
+            DishUIState.Success(newDish)
         } catch (e: Exception) {
             DishUIState.Failure(e.message ?: "Unknown error")
         }

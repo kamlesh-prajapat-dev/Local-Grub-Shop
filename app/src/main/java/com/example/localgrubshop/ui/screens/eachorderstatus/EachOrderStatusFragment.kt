@@ -1,5 +1,6 @@
 package com.example.localgrubshop.ui.screens.eachorderstatus
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +19,7 @@ import com.example.localgrubshop.utils.Constant
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@SuppressLint("SetTextI18n")
 @AndroidEntryPoint
 class EachOrderStatusFragment : Fragment() {
     private var _binding: FragmentEachOrderStatusBinding? = null

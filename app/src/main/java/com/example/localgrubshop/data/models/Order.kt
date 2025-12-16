@@ -8,7 +8,7 @@ data class Order(
     val userName: String = "",
     val userAddress: String = "",
     val userPhoneNumber: String = "",
-    val items: List<Dish> = emptyList(),
+    val items: List<SelectedDishItem> = emptyList(),
     val totalPrice: Double = 0.0,
     val placeAt: Timestamp = Timestamp.now(),
     val status: String = "Placed",
