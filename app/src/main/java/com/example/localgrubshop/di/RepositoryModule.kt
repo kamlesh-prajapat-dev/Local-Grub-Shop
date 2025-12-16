@@ -1,8 +1,8 @@
 package com.example.localgrubshop.di
 
-import com.example.localgrubshop.data.repository.MenuRepositoryImpl
-import com.example.localgrubshop.data.repository.OrderRepositoryImpl
-import com.example.localgrubshop.data.repository.ShopOwnerRepositoryImpl
+import com.example.localgrubshop.data.remote.firebase.repository.MenuRepositoryImpl
+import com.example.localgrubshop.data.remote.firebase.repository.OrderRepositoryImpl
+import com.example.localgrubshop.data.remote.firebase.repository.ShopOwnerRepositoryImpl
 import com.example.localgrubshop.domain.repository.MenuRepository
 import com.example.localgrubshop.domain.repository.OrderRepository
 import com.example.localgrubshop.domain.repository.ShopOwnerRepository

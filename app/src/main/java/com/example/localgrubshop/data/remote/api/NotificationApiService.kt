@@ -1,4 +1,4 @@
-package com.example.localgrubshop.data.remote
+package com.example.localgrubshop.data.remote.api
 
 import com.example.localgrubshop.data.models.NotificationRequest
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory

@@ -1,4 +1,4 @@
-package com.example.localgrubshop.data.repository
+package com.example.localgrubshop.data.remote.firebase.repository
 
 import com.example.localgrubshop.data.local.LocalDatabase
 import com.example.localgrubshop.domain.repository.ShopOwnerRepository

@@ -1,4 +1,4 @@
-package com.example.localgrubshop.data.repository
+package com.example.localgrubshop.data.remote.firebase.repository
 
 import com.example.localgrubshop.data.models.NotificationRequest
 import com.example.localgrubshop.data.models.Order
