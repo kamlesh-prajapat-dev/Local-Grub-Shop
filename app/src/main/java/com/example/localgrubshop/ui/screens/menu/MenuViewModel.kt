@@ -3,7 +3,7 @@ package com.example.localgrubshop.ui.screens.menu
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localgrubshop.data.models.OldDish
-import com.example.localgrubshop.domain.repository.MenuRepository
+import com.example.localgrubshop.domain.repository.DishRepository
 import com.example.localgrubshop.utils.NetworkUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MenuViewModel @Inject constructor(
-    private val menuRepository: MenuRepository,
+    private val dishRepository: DishRepository,
     private val networkUtils: NetworkUtils
 ): ViewModel() {
 
@@ -34,7 +34,7 @@ class MenuViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { MenuUIState.Loading  }
             if (networkUtils.isInternetAvailable()) {
-                val result = menuRepository.getMenu()
+                val result = dishRepository.getMenu()
                 _uiState.update { result }
             } else {
                 _uiState.update { MenuUIState.IsInternetAvailable }
@@ -46,7 +46,7 @@ class MenuViewModel @Inject constructor(
         _uiState.update { MenuUIState.Loading }
         if (networkUtils.isInternetAvailable()) {
             viewModelScope.launch {
-                val updateStockStatus = menuRepository.updateStockStatus(dish.id, inStock)
+                val updateStockStatus = dishRepository.updateStockStatus(dish.id, inStock)
                 _uiState.update { updateStockStatus }
             }
         } else {
@@ -58,7 +58,7 @@ class MenuViewModel @Inject constructor(
         _uiState.update { MenuUIState.Loading }
         if (networkUtils.isInternetAvailable()) {
             viewModelScope.launch {
-                val deleteDish = menuRepository.deleteDish(dish.id)
+                val deleteDish = dishRepository.deleteDish(dish.id)
                 _uiState.update { deleteDish }
             }
         } else {

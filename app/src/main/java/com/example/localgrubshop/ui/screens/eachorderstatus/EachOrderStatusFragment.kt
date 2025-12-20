@@ -12,7 +12,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.databinding.FragmentEachOrderStatusBinding
-import com.example.localgrubshop.domain.models.OrderHistoryResult
 import com.example.localgrubshop.ui.adapter.OrderSummaryAdapter
 import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
 import com.example.localgrubshop.utils.Constant
@@ -102,31 +101,27 @@ class EachOrderStatusFragment : Fragment() {
 
     private fun observeOrderStatusUpdate() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.updateStatusResult.collect { result ->
+            viewModel.uiState.collect { result ->
                 when (result) {
-                    OrderHistoryResult.Idle -> {
+                    EachOrderUIState.Idle -> {
                         // Initial state, do nothing
                         onSetLoading(false)
                     }
-                    OrderHistoryResult.Loading -> {
+                    EachOrderUIState.Loading -> {
                         // Loading state, show loading indicator
                         onSetLoading(true)
                     }
-                    is OrderHistoryResult.Success -> {
-                        // Success state, handle as needed
-                        onSetLoading(false)
-                    }
-                    is OrderHistoryResult.Error -> {
+                    is EachOrderUIState.Error -> {
                         // Error state, handle as needed
                         onSetLoading(false)
                         Toast.makeText(requireContext(), "Failed to update order status", Toast.LENGTH_SHORT).show()
-                        viewModel.onSetStatusResult(OrderHistoryResult.Idle)
+                        viewModel.reset()
                     }
-                    is OrderHistoryResult.UpdateSuccess -> {
+                    is EachOrderUIState.Success -> {
                         Toast.makeText(requireContext(), "Order status updated successfully", Toast.LENGTH_SHORT).show()
                         if (nextStatus != null) {
                             updateUiForStatus(nextStatus!!)
-                            viewModel.onSetStatusResult(OrderHistoryResult.Idle)
+                            viewModel.reset()
                         }
                         onSetLoading(false)
                     }

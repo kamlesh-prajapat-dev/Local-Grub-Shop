@@ -14,7 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.R
 import com.example.localgrubshop.databinding.FragmentHomeBinding
-import com.example.localgrubshop.domain.models.OrderHistoryResult
 import com.example.localgrubshop.ui.adapter.OrderHistoryAdapter
 import com.example.localgrubshop.ui.components.FilterBottomSheetFragment
 import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
@@ -147,17 +146,17 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.collect {
                 when (it) {
-                    OrderHistoryResult.Idle -> {
+                    HomeUIState.Idle -> {
                         // Initial state, do nothing
                         onSetLoading(false)
                     }
 
-                    OrderHistoryResult.Loading -> {
+                    HomeUIState.Loading -> {
                         // Loading state, show loading indicator
                         onSetLoading(true)
                     }
 
-                    is OrderHistoryResult.Success -> {
+                    is HomeUIState.Success -> {
                         // Success state, handle as needed
                         val orders = it.orders
                         if (orders.isNotEmpty()) {
@@ -170,36 +169,28 @@ class HomeFragment : Fragment() {
                             binding.orderHistoryContainer.visibility = View.GONE
                             binding.noOrdersTextView.visibility = View.VISIBLE
                         }
+                        viewModel.saveFCMToken()
                         onSetLoading(false)
                     }
 
-                    is OrderHistoryResult.Error -> {
+                    is HomeUIState.Error -> {
                         // Error state, handle as needed
                         onSetLoading(false)
                         Toast.makeText(
                             requireContext(),
-                            "Failed to update order status",
+                            it.e.message ?: "An error occurred",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
 
-                    is OrderHistoryResult.UpdateSuccess -> {
+                    is HomeUIState.UpdateSuccess -> {
                         onSetLoading(false)
                     }
-                }
-            }
-        }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isNetworkAvailable.collect {
-                if (!it) showNoInternetDialog()
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.errorMessage.collect {
-                if (it != null) {
-                    Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                    HomeUIState.NoInternet -> {
+                        showNoInternetDialog()
+                        onSetLoading(false)
+                    }
                 }
             }
         }
@@ -211,7 +202,6 @@ class HomeFragment : Fragment() {
             .setMessage(R.string.check_internet_connection)
             .setPositiveButton(R.string.ok) { dialog, _ ->
                 dialog.dismiss()
-                viewModel.onSetIsNetworkAvailable()
                 viewModel.loadOrderHistoryItems()
             }
             .create()

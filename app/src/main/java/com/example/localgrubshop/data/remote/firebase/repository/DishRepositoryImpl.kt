@@ -2,16 +2,18 @@ package com.example.localgrubshop.data.remote.firebase.repository
 
 import com.example.localgrubshop.data.models.NewDish
 import com.example.localgrubshop.data.models.OldDish
-import com.example.localgrubshop.domain.repository.MenuRepository
+import com.example.localgrubshop.domain.repository.DishRepository
 import com.example.localgrubshop.ui.screens.dish.DishUIState
 import com.example.localgrubshop.ui.screens.menu.MenuUIState
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class MenuRepositoryImpl @Inject constructor(
+@Singleton
+class DishRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
-) : MenuRepository {
+) : DishRepository {
 
     object DishFields {
         const val NAME = "name"

@@ -80,6 +80,8 @@ dependencies {
     // Dagger and ksp
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.common)
+    implementation(libs.androidx.hilt.work)
 
     // ViewModel and LiveData
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
@@ -99,4 +101,6 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("com.squareup.okhttp3:okhttp")
 
+    // Work manager
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
 }

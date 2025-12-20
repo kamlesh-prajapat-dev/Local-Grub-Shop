@@ -5,7 +5,7 @@ import com.example.localgrubshop.data.models.OldDish
 import com.example.localgrubshop.ui.screens.dish.DishUIState
 import com.example.localgrubshop.ui.screens.menu.MenuUIState
 
-interface MenuRepository {
+interface DishRepository {
     suspend fun getMenu(): MenuUIState
     suspend fun addDish(newDish: NewDish): DishUIState
     suspend fun updateDish(newDish: OldDish): DishUIState

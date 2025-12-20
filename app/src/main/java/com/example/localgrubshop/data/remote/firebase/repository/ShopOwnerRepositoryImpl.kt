@@ -1,6 +1,7 @@
 package com.example.localgrubshop.data.remote.firebase.repository
 
 import com.example.localgrubshop.data.local.LocalDatabase
+import com.example.localgrubshop.domain.models.ShopOwnerResult
 import com.example.localgrubshop.domain.repository.ShopOwnerRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -10,47 +11,39 @@ import javax.inject.Singleton
 
 @Singleton
 class ShopOwnerRepositoryImpl @Inject constructor(
-    private val firebaseFirestore: FirebaseFirestore,
-    private val localDatabase: LocalDatabase
+    private val firebaseFirestore: FirebaseFirestore
 ) : ShopOwnerRepository {
+    private var docId: String = "SHOP_OWNER"
 
-    private var docId: String? = null
-
-
-    override suspend fun saveFCMToken(token: String, onResult: (Boolean) -> Unit) {
-        try {
+    override suspend fun saveFCMToken(token: String): ShopOwnerResult {
+        return try {
             firebaseFirestore
                 .collection("owners")
-                .document("SHOP_OWNER")
+                .document(docId)
                 .set(
                     mapOf(
-                        "token" to token,
-                        "shop_owner" to true
+                        "token" to token
                     ),
                     SetOptions.merge()
                 )
                 .await()
-
-            localDatabase.setToken(token)
-            onResult(true)
+            ShopOwnerResult.UpdateSuccess(true)
         } catch (e: Exception) {
-            onResult(false)
+            ShopOwnerResult.Error(e)
         }
     }
 
-    override suspend fun getFCMToken(
-        onResult: (String) -> Unit
-    ) {
-        try {
+    override suspend fun getFCMToken(): ShopOwnerResult {
+        return try {
             val docId = this.docId
-            if (docId != null) {
-                firebaseFirestore.collection("owners").document(docId).get().await()
-                    .getString("token")?.let {
-                        onResult(it)
-                    }
-            }
+
+            firebaseFirestore.collection("owners").document(docId).get().await()
+                .getString("token")?.let {
+                    ShopOwnerResult.Success(it)
+                }
+                ?: ShopOwnerResult.Error(Exception("Token not found"))
         } catch (e: Exception) {
-            onResult("")
+            ShopOwnerResult.Error(e)
         }
     }
 }

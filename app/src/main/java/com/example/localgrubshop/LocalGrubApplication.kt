@@ -3,16 +3,28 @@ package com.example.localgrubshop
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.cloudinary.android.MediaManager
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
-class LocalGrubApplication : Application() {
+class LocalGrubApplication : Application(), Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
         initCloudinary()
+    }
+
+    override fun getWorkManagerConfiguration(): Configuration {
+        return Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
     }
 
     private fun initCloudinary() {

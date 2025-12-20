@@ -9,7 +9,7 @@ import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.example.localgrubshop.data.models.NewDish
 import com.example.localgrubshop.data.models.OldDish
-import com.example.localgrubshop.domain.repository.MenuRepository
+import com.example.localgrubshop.domain.repository.DishRepository
 import com.example.localgrubshop.utils.NetworkUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DishViewModel @Inject constructor(
-    private val menuRepository: MenuRepository,
+    private val dishRepository: DishRepository,
     private val networkUtils: NetworkUtils
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<DishUIState>(DishUIState.Idle)
@@ -126,11 +126,11 @@ class DishViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val result = when (newDishToSave) {
                 is NewDish -> {
-                    menuRepository.addDish(newDishToSave)
+                    dishRepository.addDish(newDishToSave)
                 }
 
                 is OldDish -> {
-                    menuRepository.updateDish(newDishToSave)
+                    dishRepository.updateDish(newDishToSave)
                 }
 
                 else -> Unit

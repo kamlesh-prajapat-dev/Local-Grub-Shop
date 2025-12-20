@@ -5,7 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.R
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,11 +28,12 @@ class SplashFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // Delay to show the splash screen for a short period
-            delay(2000)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                delay(2000)
 
-            val action = SplashFragmentDirections.actionSplashFragmentToHomeFragment()
-            findNavController().navigate(action)
+                val action = SplashFragmentDirections.actionSplashFragmentToHomeFragment()
+                findNavController().navigate(action)
+            }
         }
     }
 }

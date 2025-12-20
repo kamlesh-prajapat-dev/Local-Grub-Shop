@@ -2,6 +2,7 @@ package com.example.localgrubshop.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.work.WorkManager
 import com.example.localgrubshop.domain.repository.NotificationRepository
 import com.example.localgrubshop.utils.NetworkUtils
 import com.example.localgrubshop.utils.NotificationHelper
@@ -38,5 +39,12 @@ object AppModule {
     @Singleton
     fun provideNotificationRepository(): NotificationRepository {
         return NotificationRepository()
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
     }
 }
