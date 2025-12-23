@@ -8,6 +8,7 @@ import androidx.work.Configuration
 import com.cloudinary.android.MediaManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
+import com.example.localgrubshop.BuildConfig
 
 @HiltAndroidApp
 class LocalGrubApplication : Application(), Configuration.Provider {
@@ -29,7 +30,7 @@ class LocalGrubApplication : Application(), Configuration.Provider {
 
     private fun initCloudinary() {
         val config = mapOf(
-            "cloud_name" to "dezuhlunc"
+            "cloud_name" to BuildConfig.CLOUDINARY_CLOUD_NAME
         )
 
         MediaManager.init(this, config)
@@ -37,15 +38,19 @@ class LocalGrubApplication : Application(), Configuration.Provider {
 
 
     private fun createNotificationChannel() {
-        val name = "Order Status"
-        val descriptionText = "Notifications about your order status"
+        val name = getString(R.string.notification_channel_name)
+        val descriptionText = getString(R.string.notification_channel_description)
         val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel("ORDER_STATUS_CHANNEL", name, importance).apply {
+        val channel = NotificationChannel(ORDER_STATUS_CHANNEL_ID, name, importance).apply {
             description = descriptionText
         }
         // Register the channel with the system
         val notificationManager: NotificationManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
+    }
+
+    companion object {
+        const val ORDER_STATUS_CHANNEL_ID = "ORDER_STATUS_CHANNEL"
     }
 }

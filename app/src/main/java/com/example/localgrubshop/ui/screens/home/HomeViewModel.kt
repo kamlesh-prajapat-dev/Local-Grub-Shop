@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,17 +26,17 @@ class HomeViewModel @Inject constructor(
     private val networkUtils: NetworkUtils,
     private val localDatabase: LocalDatabase
 ) : ViewModel() {
-
+    // StateFlow for history order that will be observed by HomeFragment
     private val _historyOrder = MutableStateFlow<List<Order>>(emptyList())
     val historyOrder: StateFlow<List<Order>> get() = _historyOrder.asStateFlow()
-
+    // method to update history order
     fun onSetHistoryOrder(orders: List<Order>) {
         _historyOrder.value = orders
     }
-
+    // StateFlow for UI state that will be observed by HomeFragment and update UI accordingly
     private val _uiState = MutableStateFlow<HomeUIState>(HomeUIState.Idle)
     val uiState: StateFlow<HomeUIState> get() = _uiState.asStateFlow()
-
+    // method to load FCM token from local database and if not present then fetch from firebase, save it to local database
     fun saveFCMToken() {
         viewModelScope.launch(Dispatchers.IO) {
             val localToken = localDatabase.getToken()
@@ -47,7 +49,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-
+    // method to load order history items from firebase and update UI accordingly
     fun loadOrderHistoryItems() {
         _uiState.value = HomeUIState.Loading
 
@@ -59,5 +61,45 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = orderUseCase.getOrders()
         }
+    }
+    // method to filter orders based on status and date range
+    fun filterOrders(status: String?, startDate: Date?, endDate: Date?) {
+        val currentList = historyOrder.value
+        val filteredList = currentList.filter { order ->
+            val statusMatch = status == null || order.status == status
+            val dateMatch = isDateInRange(order.placeAt.toDate(), startDate, endDate)
+            statusMatch && dateMatch
+        }
+        _historyOrder.value = filteredList
+    }
+    // method to check if date is in range between start date and end date
+    private fun isDateInRange(
+        date: Date,
+        startDate: Date?,
+        endDate: Date?
+    ): Boolean {
+
+        val d = date.clearTime()
+        val start = startDate?.clearTime()
+        val end = endDate?.clearTime()
+
+        if (start == null && end == null) return true
+        if (start != null && end != null) {
+            return !d.before(start) && !d.after(end)
+        }
+        if (start != null) {
+            return !d.before(start)
+        }
+        return !d.after(end)
+    }
+    // method to clear time from date
+    private fun Date.clearTime(): Date {
+        val cal = Calendar.getInstance()
+        cal.time = this
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return cal.time
     }
 }

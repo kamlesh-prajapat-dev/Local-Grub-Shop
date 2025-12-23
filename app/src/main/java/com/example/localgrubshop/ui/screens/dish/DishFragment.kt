@@ -22,16 +22,16 @@ import com.example.localgrubshop.ui.sharedviewmodel.SharedMDViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 
 @AndroidEntryPoint
 class DishFragment : Fragment() {
 
     private var _binding: FragmentDishBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: DishViewModel by viewModels()
     private val sharedMDViewModel: SharedMDViewModel by activityViewModels()
-
     private var imageUri: Uri? = null
 
     override fun onCreateView(
@@ -75,57 +75,66 @@ class DishFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            sharedMDViewModel.dish.collect {
-                if (it != null) {
-                    viewModel.onSetDish(it)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                sharedMDViewModel.dish.collect {
+                    if (it != null) {
+                        viewModel.onSetDish(it)
+                    }
                 }
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.dish.collect { dish ->
-                if (dish != null) {
-                    binding.dishNameEditText.setText(dish.name)
-                    binding.descriptionEditText.setText(dish.description)
-                    binding.priceEditText.setText(dish.price.toString())
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.dish.collect { dish ->
+                    if (dish != null) {
+                        binding.dishNameEditText.setText(dish.name)
+                        binding.descriptionEditText.setText(dish.description)
+                        binding.priceEditText.setText(dish.price.toString())
 
-                    if (dish.thumbnail.isNotEmpty()) {
-                        val rawImageUrl = dish.thumbnail.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+                        if (dish.thumbnail.isNotEmpty()) {
+                            val rawImageUrl = dish.thumbnail.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
 
-                        Glide.with(binding.dishImageView.context)
-                            .load(rawImageUrl)
-                            .placeholder(R.drawable.ic_launcher_foreground)
-                            .error(R.drawable.ic_launcher_foreground)
-                            .into(binding.dishImageView)
+                            Glide.with(binding.dishImageView.context)
+                                .load(rawImageUrl)
+                                .placeholder(R.drawable.ic_launcher_foreground)
+                                .error(R.drawable.ic_launcher_foreground)
+                                .into(binding.dishImageView)
+                        }
+
+                        binding.saveButton.text = "Update"
+                        binding.availabilitySwitch.isChecked = dish.available
                     }
-
-                    binding.saveButton.text = "Update"
-                    binding.availabilitySwitch.isChecked = dish.isAvailable
                 }
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState.collect {
-                when(it) {
-                    is DishUIState.Failure -> {
-                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
-                        onSetLoading(false)
-                    }
-                    DishUIState.Idle -> {
-                        onSetLoading(false)
-                    }
-                    DishUIState.NoInternet -> {
-                        showNoInternetDialog()
-                        onSetLoading(false)
-                    }
-                    DishUIState.Loading -> {
-                        onSetLoading(true)
-                    }
-                    is DishUIState.Success -> {
-                        Toast.makeText(requireContext(), "Dish saved successfully", Toast.LENGTH_SHORT).show()
-                        onSetLoading(false)
-                        findNavController().navigateUp()
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect {
+                    when(it) {
+                        is DishUIState.Failure -> {
+                            Toast.makeText(requireContext(), it.e.message, Toast.LENGTH_SHORT).show()
+                            onSetLoading(false)
+                        }
+                        DishUIState.Idle -> {
+                            onSetLoading(false)
+                        }
+                        DishUIState.NoInternet -> {
+                            showNoInternetDialog()
+                            onSetLoading(false)
+                        }
+                        DishUIState.Loading -> {
+                            onSetLoading(true)
+                        }
+                        is DishUIState.Success -> {
+                            Toast.makeText(requireContext(), "Dish saved successfully", Toast.LENGTH_SHORT).show()
+                            onSetLoading(false)
+                            findNavController().navigateUp()
+                        }
+                        is DishUIState.Error -> {
+                            Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }

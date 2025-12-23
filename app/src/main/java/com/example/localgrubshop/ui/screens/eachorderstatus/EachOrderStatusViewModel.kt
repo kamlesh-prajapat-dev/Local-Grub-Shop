@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localgrubshop.data.models.Order
 import com.example.localgrubshop.domain.usecase.OrderUseCase
+import com.example.localgrubshop.utils.NetworkUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,9 +14,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EachOrderStatusViewModel @Inject constructor(
-    private val orderUseCase: OrderUseCase,
+    private val orderUseCase: OrderUseCase, // Order Use case field
+    private val networkUtils: NetworkUtils //
 ) : ViewModel() {
-
     private val _order = MutableStateFlow<Order?>(null)
     val order: StateFlow<Order?> get() = _order.asStateFlow()
 
@@ -27,8 +28,14 @@ class EachOrderStatusViewModel @Inject constructor(
     }
 
     fun updateOrderStatus(order: Order, newStatus: String) {
+        _uiState.value = EachOrderUIState.Loading
+
+        if (!networkUtils.isInternetAvailable()) {
+            _uiState.value = EachOrderUIState.NoInternet
+            return
+        }
+
         viewModelScope.launch {
-            _uiState.value = EachOrderUIState.Loading
             _uiState.value = orderUseCase.updateOrderStatus(orderId = order.id, newStatus = newStatus, userId = order.userId)
         }
     }

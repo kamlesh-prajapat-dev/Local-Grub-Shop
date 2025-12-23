@@ -2,8 +2,8 @@ package com.example.localgrubshop.ui.screens.menu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.localgrubshop.data.models.OldDish
-import com.example.localgrubshop.domain.repository.DishRepository
+import com.example.localgrubshop.data.models.FetchedDish
+import com.example.localgrubshop.domain.usecase.DishUseCase
 import com.example.localgrubshop.utils.NetworkUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -16,17 +16,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MenuViewModel @Inject constructor(
-    private val dishRepository: DishRepository,
+    private val dishUseCase: DishUseCase,
     private val networkUtils: NetworkUtils
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow<MenuUIState>(MenuUIState.Idle)
     val uiState: StateFlow<MenuUIState> get() = _uiState.asStateFlow()
 
-    private val _menuItems = MutableStateFlow<List<OldDish>>(emptyList())
-    val menuItems: StateFlow<List<OldDish>> get() = _menuItems.asStateFlow()
+    private val _menuItems = MutableStateFlow<List<FetchedDish>>(emptyList())
+    val menuItems: StateFlow<List<FetchedDish>> get() = _menuItems.asStateFlow()
 
-    fun onSetMenuItems(newDishes: List<OldDish>) {
+    fun onSetMenuItems(newDishes: List<FetchedDish>) {
         _menuItems.update { newDishes }
     }
 
@@ -34,7 +34,7 @@ class MenuViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { MenuUIState.Loading  }
             if (networkUtils.isInternetAvailable()) {
-                val result = dishRepository.getMenu()
+                val result = dishUseCase.getMenu()
                 _uiState.update { result }
             } else {
                 _uiState.update { MenuUIState.IsInternetAvailable }
@@ -42,11 +42,11 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    fun updateStockStatus(dish: OldDish, inStock: Boolean) {
+    fun updateStockStatus(dish: FetchedDish, inStock: Boolean) {
         _uiState.update { MenuUIState.Loading }
         if (networkUtils.isInternetAvailable()) {
             viewModelScope.launch {
-                val updateStockStatus = dishRepository.updateStockStatus(dish.id, inStock)
+                val updateStockStatus = dishUseCase.updateStockStatus(dish.id, inStock)
                 _uiState.update { updateStockStatus }
             }
         } else {
@@ -54,11 +54,11 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    fun deleteMenuItem(dish: OldDish) {
+    fun deleteMenuItem(dish: FetchedDish) {
         _uiState.update { MenuUIState.Loading }
         if (networkUtils.isInternetAvailable()) {
             viewModelScope.launch {
-                val deleteDish = dishRepository.deleteDish(dish.id)
+                val deleteDish = dishUseCase.deleteDish(dish.id)
                 _uiState.update { deleteDish }
             }
         } else {

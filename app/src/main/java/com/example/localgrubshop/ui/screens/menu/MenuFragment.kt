@@ -10,10 +10,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.R
-import com.example.localgrubshop.data.models.OldDish
+import com.example.localgrubshop.data.models.FetchedDish
 import com.example.localgrubshop.databinding.FragmentMenuBinding
 import com.example.localgrubshop.ui.adapter.MenuAdapter
 import com.example.localgrubshop.ui.sharedviewmodel.SharedMDViewModel
@@ -72,46 +74,50 @@ class MenuFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState.collect {
-                when (it) {
-                    is MenuUIState.Failure -> {
-                        onSetLoading(false)
-                    }
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect {
+                    when (it) {
+                        is MenuUIState.Failure -> {
+                            onSetLoading(false)
+                        }
 
-                    MenuUIState.Idle -> {
-                        onSetLoading(false)
-                    }
+                        MenuUIState.Idle -> {
+                            onSetLoading(false)
+                        }
 
-                    MenuUIState.IsInternetAvailable -> {
-                        showNoInternetDialog()
-                        onSetLoading(false)
-                    }
+                        MenuUIState.IsInternetAvailable -> {
+                            showNoInternetDialog()
+                            onSetLoading(false)
+                        }
 
-                    MenuUIState.Loading -> {
-                        onSetLoading(true)
-                    }
+                        MenuUIState.Loading -> {
+                            onSetLoading(true)
+                        }
 
-                    is MenuUIState.Success -> {
-                        viewModel.onSetMenuItems(it.data)
-                        onSetLoading(false)
-                    }
+                        is MenuUIState.Success -> {
+                            viewModel.onSetMenuItems(it.data)
+                            onSetLoading(false)
+                        }
 
-                    is MenuUIState.DeleteSuccess -> {
-                        viewModel.loadMenu()
-                        onSetLoading(false)
-                    }
+                        is MenuUIState.DeleteSuccess -> {
+                            viewModel.loadMenu()
+                            onSetLoading(false)
+                        }
 
-                    is MenuUIState.StockUpdateSuccess -> {
-                        viewModel.loadMenu()
-                        onSetLoading(false)
+                        is MenuUIState.StockUpdateSuccess -> {
+                            viewModel.loadMenu()
+                            onSetLoading(false)
+                        }
                     }
                 }
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.menuItems.collect { dishes ->
-                menuAdapter.submitList(dishes)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.menuItems.collect { dishes ->
+                    menuAdapter.submitList(dishes)
+                }
             }
         }
     }
@@ -128,7 +134,7 @@ class MenuFragment : Fragment() {
         }
     }
 
-    private fun showDeleteConfirmationDialog(dish: OldDish) {
+    private fun showDeleteConfirmationDialog(dish: FetchedDish) {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Item")
             .setMessage("Are you sure you want to delete ${dish.name}?")

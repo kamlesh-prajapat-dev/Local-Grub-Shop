@@ -2,6 +2,7 @@ package com.example.localgrubshop.data.remote.firebase.repository
 
 import com.example.localgrubshop.domain.models.UserResult
 import com.example.localgrubshop.domain.repository.UserRepository
+import com.example.localgrubshop.utils.UserFields
 import com.google.firebase.firestore.FirebaseFirestore
 import jakarta.inject.Inject
 import kotlinx.coroutines.tasks.await
@@ -13,10 +14,10 @@ class UserRepositoryImpl @Inject constructor(
 ) : UserRepository {
     override suspend fun getToken(userId: String): UserResult {
         return try {
-            val document = firebaseFirestore.collection("users").document(userId).get().await()
+            val document = firebaseFirestore.collection(UserFields.COLLECTION).document(userId).get().await()
 
             if (document.exists()) {
-                val token = document.getString("fcmToken")
+                val token = document.getString(UserFields.TOKEN)
                 if (token != null) {
                     UserResult.Success(token)
                 } else {

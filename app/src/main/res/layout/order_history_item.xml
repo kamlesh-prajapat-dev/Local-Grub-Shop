@@ -25,7 +25,7 @@
             app:layout_constraintEnd_toStartOf="@+id/orderStatusTextView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Kamlesh Prajapat" />
+            tools:text="Customer Name" />
 
         <TextView
             android:id="@+id/orderDateTextView"
@@ -48,7 +48,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Delivered" />
+            tools:text="Status" />
 
         <TextView
             android:id="@+id/totalPriceTextView"

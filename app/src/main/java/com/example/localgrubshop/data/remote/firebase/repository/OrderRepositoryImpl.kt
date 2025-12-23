@@ -2,15 +2,11 @@ package com.example.localgrubshop.data.remote.firebase.repository
 
 import com.example.localgrubshop.data.models.Order
 import com.example.localgrubshop.domain.models.OrderResult
-import com.example.localgrubshop.domain.repository.NotificationRepository
 import com.example.localgrubshop.domain.repository.OrderRepository
+import com.example.localgrubshop.utils.OrderFields
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.collections.map
-import kotlin.collections.sortedByDescending
-import kotlin.jvm.java
 
 class OrderRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
@@ -18,7 +14,7 @@ class OrderRepositoryImpl @Inject constructor(
 
     override suspend fun getOrders(): OrderResult {
         return try {
-            val snapshot = firestore.collection("orders")
+            val snapshot = firestore.collection(OrderFields.COLLECTION)
                 .get()
                 .await()
             val documents = snapshot.documents
@@ -40,8 +36,8 @@ class OrderRepositoryImpl @Inject constructor(
         newStatus: String
     ): OrderResult {
         return try {
-            firestore.collection("orders").document(orderId)
-                .update("status", newStatus)
+            firestore.collection(OrderFields.COLLECTION).document(orderId)
+                .update(OrderFields.STATUS, newStatus)
                 .await()
 
             OrderResult.UpdateSuccess(true)

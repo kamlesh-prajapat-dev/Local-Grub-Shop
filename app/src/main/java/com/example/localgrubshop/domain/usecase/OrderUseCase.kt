@@ -19,7 +19,6 @@ class OrderUseCase @Inject constructor(
     private val userRepository: UserRepository,
     private val workManager: WorkManager
 ) {
-
     suspend fun getOrders(): HomeUIState {
         return when (val result = orderRepository.getOrders()) {
             is OrderResult.Success -> {
@@ -55,7 +54,6 @@ class OrderUseCase @Inject constructor(
                         )
                     }
                     is com.example.localgrubshop.domain.models.UserResult.Error -> {
-                        val e = result2.e
                         val workRequest = OneTimeWorkRequestBuilder<SenderNotificationWorker>()
                             .setInputData(
                                 workDataOf("ORDER_ID" to orderId,

@@ -8,8 +8,8 @@ import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.example.localgrubshop.data.models.NewDish
-import com.example.localgrubshop.data.models.OldDish
-import com.example.localgrubshop.domain.repository.DishRepository
+import com.example.localgrubshop.data.models.FetchedDish
+import com.example.localgrubshop.domain.usecase.DishUseCase
 import com.example.localgrubshop.utils.NetworkUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,14 +22,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DishViewModel @Inject constructor(
-    private val dishRepository: DishRepository,
+    private val dishUseCase: DishUseCase,
     private val networkUtils: NetworkUtils
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<DishUIState>(DishUIState.Idle)
     val uiState: StateFlow<DishUIState> get() = _uiState.asStateFlow()
-    private val _dish = MutableStateFlow<OldDish?>(null)
-    val dish: StateFlow<OldDish?> get() = _dish.asStateFlow()
-    fun onSetDish(newDish: OldDish) {
+    private val _dish = MutableStateFlow<FetchedDish?>(null)
+    val dish: StateFlow<FetchedDish?> get() = _dish.asStateFlow()
+    fun onSetDish(newDish: FetchedDish) {
         _dish.value = newDish
     }
     fun saveDish(
@@ -42,7 +42,7 @@ class DishViewModel @Inject constructor(
         _uiState.value = DishUIState.Loading
 
         if (name == dish.value?.name && description == dish.value?.description && price == dish.value?.price?.toDouble() && imageUri == dish.value?.thumbnail?.toUri()) {
-            _uiState.update { DishUIState.Failure("No changes to save") }
+            _uiState.value = DishUIState.Error("No changes to save")
             return
         } else if (imageUri == dish.value?.thumbnail?.toUri()) {
             updateDish(name = name, description = description, price = price, imageUrl = dish.value?.thumbnail ?: "", isAvailable = isAvailable)
@@ -67,7 +67,7 @@ class DishViewModel @Inject constructor(
 
                     if (imageUrl.isNullOrEmpty()) {
                         _uiState.update {
-                            DishUIState.Failure("Image upload failed")
+                            DishUIState.Error("Image upload failed")
                         }
                         return
                     }
@@ -80,7 +80,7 @@ class DishViewModel @Inject constructor(
                     error: ErrorInfo?
                 ) {
                     _uiState.update {
-                        DishUIState.Failure(
+                        DishUIState.Error(
                             error?.description ?: "Image upload error"
                         )
                     }
@@ -114,23 +114,23 @@ class DishViewModel @Inject constructor(
             description = description,
             price = price.toInt(),
             thumbnail = imageUrl,
-            isAvailable = isAvailable
+            available = isAvailable
         ) ?: NewDish(
             name = name,
             description = description,
             price = price.toInt(),
             thumbnail = imageUrl,
-            isAvailable = isAvailable
+            available = isAvailable
         )
 
         viewModelScope.launch(Dispatchers.IO) {
             val result = when (newDishToSave) {
                 is NewDish -> {
-                    dishRepository.addDish(newDishToSave)
+                    dishUseCase.addDish(newDishToSave)
                 }
 
-                is OldDish -> {
-                    dishRepository.updateDish(newDishToSave)
+                is FetchedDish -> {
+                    dishUseCase.updateDish(newDishToSave)
                 }
 
                 else -> Unit

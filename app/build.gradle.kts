@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -14,6 +16,13 @@ plugins {
     kotlin("plugin.serialization") version "2.2.21"
 }
 
+// Load local.properties
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.example.localgrubshop"
     compileSdk {
@@ -28,6 +37,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Expose CLOUDINARY_CLOUD_NAME to BuildConfig
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localProperties.getProperty("cloudinary_cloud_name")}\"")
     }
 
     buildTypes {
@@ -47,6 +59,7 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         dataBinding = true
         viewBinding = true
     }

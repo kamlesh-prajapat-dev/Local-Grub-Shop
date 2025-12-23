@@ -5,4 +5,5 @@ sealed interface EachOrderUIState {
     object Loading : EachOrderUIState
     data class Error(val e: Exception): EachOrderUIState
     data class Success(val data: Boolean): EachOrderUIState
+    object NoInternet: EachOrderUIState
 }

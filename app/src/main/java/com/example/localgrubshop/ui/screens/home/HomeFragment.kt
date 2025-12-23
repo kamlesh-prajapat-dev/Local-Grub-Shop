@@ -10,7 +10,9 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.R
 import com.example.localgrubshop.databinding.FragmentHomeBinding
@@ -19,19 +21,14 @@ import com.example.localgrubshop.ui.components.FilterBottomSheetFragment
 import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.Calendar
-import java.util.Date
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
-    private val viewModel: HomeViewModel by viewModels()
-    private lateinit var orderHistoryAdapter: OrderHistoryAdapter
-    private val sharedViewModel: SharedHFToEOSFViewModel by activityViewModels()
-    private var currentStatusFilter: String? = null
-    private var currentStartDate: Date? = null
-    private var currentEndDate: Date? = null
+    private var _binding: FragmentHomeBinding? = null // Data binding mutable variable
+    private val binding get() = _binding!! // Data binding immutable variable
+    private val viewModel: HomeViewModel by viewModels() // View model for its fragment
+    private lateinit var orderHistoryAdapter: OrderHistoryAdapter // Adapter for order history
+    private val sharedViewModel: SharedHFToEOSFViewModel by activityViewModels() // Shared view model between HomeFragment and EachOrderStatusFragment for data share
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,18 +46,15 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupRecyclerView()
-        observeViewModel()
-        setupListeners()
+        setupRecyclerView() // Setup recycler view
+        observeViewModel() // Observe ui state and orders state from view model and take action according this
+        setupListeners() // setup listeners for click event and perform action
     }
 
     private fun setupListeners() {
         binding.filterChip.setOnClickListener {
             val bottomSheet = FilterBottomSheetFragment { status, startDate, endDate ->
-                currentStatusFilter = status
-                currentStartDate = startDate
-                currentEndDate = endDate
-                filterOrders()
+                viewModel.filterOrders(status = status, startDate = startDate, endDate = endDate)
             }
             bottomSheet.show(parentFragmentManager, bottomSheet.tag)
         }
@@ -74,46 +68,6 @@ class HomeFragment : Fragment() {
                 else -> false
             }
         }
-    }
-
-    private fun filterOrders() {
-        val currentList = viewModel.historyOrder.value
-        val filteredList = currentList.filter { order ->
-            val statusMatch = currentStatusFilter == null || order.status == currentStatusFilter
-            val dateMatch = isDateInRange(order.placeAt.toDate(), currentStartDate, currentEndDate)
-            statusMatch && dateMatch
-        }
-        orderHistoryAdapter.submitList(filteredList)
-    }
-
-    private fun isDateInRange(
-        date: Date,
-        startDate: Date?,
-        endDate: Date?
-    ): Boolean {
-
-        val d = date.clearTime()
-        val start = startDate?.clearTime()
-        val end = endDate?.clearTime()
-
-        if (start == null && end == null) return true
-        if (start != null && end != null) {
-            return !d.before(start) && !d.after(end)
-        }
-        if (start != null) {
-            return !d.before(start)
-        }
-        return !d.after(end)
-    }
-
-    private fun Date.clearTime(): Date {
-        val cal = Calendar.getInstance()
-        cal.time = this
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        return cal.time
     }
 
     private fun showPopupMenu(anchorView: View) {
@@ -144,53 +98,57 @@ class HomeFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState.collect {
-                when (it) {
-                    HomeUIState.Idle -> {
-                        // Initial state, do nothing
-                        onSetLoading(false)
-                    }
-
-                    HomeUIState.Loading -> {
-                        // Loading state, show loading indicator
-                        onSetLoading(true)
-                    }
-
-                    is HomeUIState.Success -> {
-                        // Success state, handle as needed
-                        val orders = it.orders
-                        if (orders.isNotEmpty()) {
-                            binding.orderHistoryContainer.visibility = View.VISIBLE
-                            binding.noOrdersTextView.visibility = View.GONE
-                            orderHistoryAdapter.submitList(orders)
-                            viewModel.onSetHistoryOrder(orders)
-                            filterOrders()
-                        } else {
-                            binding.orderHistoryContainer.visibility = View.GONE
-                            binding.noOrdersTextView.visibility = View.VISIBLE
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect {
+                    when (it) {
+                        HomeUIState.Idle -> {
+                            onSetLoading(false)
                         }
-                        viewModel.saveFCMToken()
-                        onSetLoading(false)
-                    }
 
-                    is HomeUIState.Error -> {
-                        // Error state, handle as needed
-                        onSetLoading(false)
-                        Toast.makeText(
-                            requireContext(),
-                            it.e.message ?: "An error occurred",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                        HomeUIState.Loading -> {
+                            onSetLoading(true)
+                        }
 
-                    is HomeUIState.UpdateSuccess -> {
-                        onSetLoading(false)
-                    }
+                        is HomeUIState.Success -> {
+                            val orders = it.orders
+                            if (orders.isNotEmpty()) {
+                                viewModel.onSetHistoryOrder(orders)
+                                binding.orderHistoryContainer.visibility = View.VISIBLE
+                                binding.noOrdersTextView.visibility = View.GONE
+                            } else {
+                                binding.orderHistoryContainer.visibility = View.GONE
+                                binding.noOrdersTextView.visibility = View.VISIBLE
+                            }
+                            viewModel.saveFCMToken()
+                            onSetLoading(false)
+                        }
 
-                    HomeUIState.NoInternet -> {
-                        showNoInternetDialog()
-                        onSetLoading(false)
+                        is HomeUIState.Error -> {
+                            onSetLoading(false)
+                            Toast.makeText(
+                                requireContext(),
+                                it.e.message ?: "An error occurred",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        is HomeUIState.UpdateSuccess -> {
+                            onSetLoading(false)
+                        }
+
+                        HomeUIState.NoInternet -> {
+                            showNoInternetDialog()
+                            onSetLoading(false)
+                        }
                     }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.historyOrder.collect {
+                    orderHistoryAdapter.submitList(it)
                 }
             }
         }
@@ -208,7 +166,7 @@ class HomeFragment : Fragment() {
             .show()
     }
 
-    fun onSetLoading(isLoading: Boolean) {
+    private fun onSetLoading(isLoading: Boolean) {
         binding.loadingIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 

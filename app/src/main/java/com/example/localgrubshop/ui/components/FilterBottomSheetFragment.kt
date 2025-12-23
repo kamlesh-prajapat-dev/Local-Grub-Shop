@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.localgrubshop.databinding.BottomSheetFilterBinding
-import com.example.localgrubshop.utils.Constant
+import com.example.localgrubshop.utils.OrderStatus
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -14,14 +14,12 @@ import java.util.Date
 import java.util.Locale
 
 class FilterBottomSheetFragment(
-    private val onFilterSelected: (String?, Date?, Date?) -> Unit
+    private val onFilterSelected: (String?, Date?, Date?) -> Unit // callback function for filter selection
 ) : BottomSheetDialogFragment() {
-
-    private var _binding: BottomSheetFilterBinding? = null
-    private val binding get() = _binding!!
-
-    private var startDate: Date? = null
-    private var endDate: Date? = null
+    private var _binding: BottomSheetFilterBinding? = null // binding mutable variable
+    private val binding get() = _binding!! // binding immutable variable
+    private var startDate: Date? = null // start date for filter
+    private var endDate: Date? = null // end date for filter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,7 +34,7 @@ class FilterBottomSheetFragment(
         super.onViewCreated(view, savedInstanceState)
         setupClickListeners()
     }
-
+    // setup click listeners for filter buttons
     private fun setupClickListeners() {
         binding.startDateEditText.setOnClickListener {
             showDatePickerDialog(true)
@@ -49,11 +47,11 @@ class FilterBottomSheetFragment(
         binding.applyButton.setOnClickListener {
             val selectedStatus = when (binding.statusChipGroup.checkedChipId) {
                 binding.chipAll.id -> null
-                binding.chipPlaced.id -> Constant.PLACED.name
-                binding.chipConfirmed.id -> Constant.CONFIRMED.name
-                binding.chipPreparing.id -> Constant.PREPARING.name
-                binding.chipOutForDelivery.id -> Constant.OUT_FOR_DELIVERY.name
-                binding.chipDelivered.id -> Constant.DELIVERED.name
+                binding.chipPlaced.id -> OrderStatus.PLACED
+                binding.chipConfirmed.id -> OrderStatus.CONFIRMED
+                binding.chipPreparing.id -> OrderStatus.PREPARING
+                binding.chipOutForDelivery.id -> OrderStatus.OUT_FOR_DELIVERY
+                binding.chipDelivered.id -> OrderStatus.DELIVERED
                 else -> null
             }
             onFilterSelected(selectedStatus, startDate, endDate)
@@ -70,7 +68,7 @@ class FilterBottomSheetFragment(
             dismiss()
         }
     }
-
+    // show date picker dialog
     private fun showDatePickerDialog(isStartDate: Boolean) {
         val calendar = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog(
@@ -95,7 +93,7 @@ class FilterBottomSheetFragment(
         )
         datePickerDialog.show()
     }
-
+    // destroy binding
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

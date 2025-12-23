@@ -1,10 +1,10 @@
 package com.example.localgrubshop.data.remote.firebase.repository
 
 import com.example.localgrubshop.data.models.NewDish
-import com.example.localgrubshop.data.models.OldDish
+import com.example.localgrubshop.data.models.FetchedDish
+import com.example.localgrubshop.domain.models.DishResult
 import com.example.localgrubshop.domain.repository.DishRepository
-import com.example.localgrubshop.ui.screens.dish.DishUIState
-import com.example.localgrubshop.ui.screens.menu.MenuUIState
+import com.example.localgrubshop.utils.DishFields
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -15,80 +15,60 @@ class DishRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : DishRepository {
 
-    object DishFields {
-        const val NAME = "name"
-        const val DESCRIPTION = "description"
-        const val PRICE = "price"
-        const val THUMBNAIL = "thumbnail"
-        const val IN_STOCK = "isAvailable"
-        const val COLLECTION = "dishes"
-    }
-
-    override suspend fun getMenu(): MenuUIState {
+    override suspend fun getMenu(): DishResult {
         return try {
             val snapshot = firestore.collection(DishFields.COLLECTION).get().await()
 
             val document = snapshot.documents
             if (document.isEmpty()) {
-                return MenuUIState.Success(emptyList())
+                DishResult.GetSuccess(emptyList())
+            } else {
+                val dishes = document.map {
+                    it.toObject(FetchedDish::class.java)?.copy(id = it.id) ?: FetchedDish()
+                }
+                DishResult.GetSuccess(dishes)
             }
-
-            val dishes = document.map {
-                OldDish(
-                    id = it.id,
-                    name = it.getString(DishFields.NAME) ?: "",
-                    description = it.getString(DishFields.DESCRIPTION) ?: "",
-                    price = it.getLong(DishFields.PRICE)?.toInt() ?: 0,
-                    thumbnail = it.getString(DishFields.THUMBNAIL) ?: "",
-                    isAvailable = it.getBoolean(DishFields.IN_STOCK) ?: false,
-                )
-            }
-            MenuUIState.Success(dishes)
         } catch (e: Exception) {
-            MenuUIState.Failure(e.message ?: "Unknown error")
+            DishResult.Failure(e)
         }
     }
 
-    override suspend fun addDish(newDish: NewDish): DishUIState {
+    override suspend fun addDish(newDish: NewDish): DishResult {
         return try {
-            val dish = firestore.collection(DishFields.COLLECTION).add(newDish).await()
-            DishUIState.Success(OldDish(
-                id = dish.id,
-                name = newDish.name,
-                description = newDish.description,
-                price = newDish.price,
-                thumbnail = newDish.thumbnail,
-                isAvailable = newDish.isAvailable
-            ))
+            val document = firestore.collection(DishFields.COLLECTION).add(newDish).await()
+            DishResult.AddSuccess(dish = newDish, id = document.id)
         } catch (e: Exception) {
-            DishUIState.Failure(e.message ?: "Unknown error")
+            DishResult.Failure(e)
         }
     }
 
-    override suspend fun updateDish(newDish: OldDish): DishUIState {
+    override suspend fun updateDish(newDish: FetchedDish): DishResult {
         return try {
             firestore.collection(DishFields.COLLECTION).document(newDish.id).set(newDish).await()
-            DishUIState.Success(newDish)
+            DishResult.UpdateSuccess(newDish)
         } catch (e: Exception) {
-            DishUIState.Failure(e.message ?: "Unknown error")
+            DishResult.Failure(e)
         }
     }
 
-    override suspend fun deleteDish(dishId: String): MenuUIState {
+    override suspend fun deleteDish(dishId: String): DishResult {
         return try {
             firestore.collection(DishFields.COLLECTION).document(dishId).delete().await()
-            MenuUIState.DeleteSuccess(true)
+            DishResult.DeleteSuccess(true)
         } catch (e: Exception) {
-            MenuUIState.Failure(e.message ?: "Unknown error")
+            DishResult.Failure(e)
         }
     }
 
-    override suspend fun updateStockStatus(dishId: String, inStock: Boolean): MenuUIState {
+    override suspend fun updateStockStatus(dishId: String, inStock: Boolean): DishResult {
         return try {
-            firestore.collection(DishFields.COLLECTION).document(dishId).update(DishFields.IN_STOCK, inStock).await()
-            MenuUIState.StockUpdateSuccess(true)
+            firestore.collection(DishFields.COLLECTION)
+                .document(dishId)
+                .update(DishFields.IN_STOCK, inStock)
+                .await()
+            DishResult.StockUpdateSuccess(true)
         } catch (e: Exception) {
-            MenuUIState.Failure(e.message ?: "Unknown error")
+            DishResult.Failure(e)
         }
     }
 }

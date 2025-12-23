@@ -1,8 +1,8 @@
 package com.example.localgrubshop.data.remote.firebase.repository
 
-import com.example.localgrubshop.data.local.LocalDatabase
 import com.example.localgrubshop.domain.models.ShopOwnerResult
 import com.example.localgrubshop.domain.repository.ShopOwnerRepository
+import com.example.localgrubshop.utils.ShopOwnerFields
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
@@ -18,11 +18,11 @@ class ShopOwnerRepositoryImpl @Inject constructor(
     override suspend fun saveFCMToken(token: String): ShopOwnerResult {
         return try {
             firebaseFirestore
-                .collection("owners")
+                .collection(ShopOwnerFields.COLLECTION)
                 .document(docId)
                 .set(
                     mapOf(
-                        "token" to token
+                        ShopOwnerFields.TOKEN to token
                     ),
                     SetOptions.merge()
                 )
@@ -37,8 +37,8 @@ class ShopOwnerRepositoryImpl @Inject constructor(
         return try {
             val docId = this.docId
 
-            firebaseFirestore.collection("owners").document(docId).get().await()
-                .getString("token")?.let {
+            firebaseFirestore.collection(ShopOwnerFields.COLLECTION).document(docId).get().await()
+                .getString(ShopOwnerFields.TOKEN)?.let {
                     ShopOwnerResult.Success(it)
                 }
                 ?: ShopOwnerResult.Error(Exception("Token not found"))

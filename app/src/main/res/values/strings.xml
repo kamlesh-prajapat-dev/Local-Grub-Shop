@@ -5,4 +5,12 @@
     <string name="no_internet_connection">No Internet Connection</string>
     <string name="check_internet_connection">Please check your internet connection and try again.</string>
     <string name="ok">OK</string>
+
+    <!-- Notification Strings -->
+    <string name="notification_new_order_title">New Order Received</string>
+    <string name="notification_new_order_body">You have a new order! Order ID: %1$s</string>
+
+    <!-- Notification Channel Strings -->
+    <string name="notification_channel_name">Order Status</string>
+    <string name="notification_channel_description">Notifications about your order status</string>
 </resources>

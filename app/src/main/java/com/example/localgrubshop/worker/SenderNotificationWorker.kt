@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.localgrubshop.R
 import com.example.localgrubshop.data.models.NotificationRequest
 import com.example.localgrubshop.domain.models.UserResult
 import com.example.localgrubshop.domain.repository.NotificationRepository
@@ -14,7 +15,7 @@ import dagger.assisted.AssistedInject
 
 @HiltWorker
 class SenderNotificationWorker @AssistedInject constructor(
-    @Assisted context: Context,
+    @Assisted private val context: Context,
     @Assisted params: WorkerParameters,
     private val userRepository: UserRepository,
     private val notificationRepository: NotificationRepository
@@ -31,8 +32,8 @@ class SenderNotificationWorker @AssistedInject constructor(
                     notificationRepository.sendNotification(
                         NotificationRequest(
                             token = token,
-                            title = "New Order Received",
-                            body = "You have a new order! Order ID: $orderId",
+                            title = context.getString(R.string.notification_new_order_title),
+                            body = context.getString(R.string.notification_new_order_body, orderId),
                             orderId = orderId
                         )
                     )
