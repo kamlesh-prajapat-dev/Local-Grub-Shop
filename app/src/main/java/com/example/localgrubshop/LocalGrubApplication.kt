@@ -9,6 +9,7 @@ import com.cloudinary.android.MediaManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import com.example.localgrubshop.BuildConfig
+import com.google.firebase.database.FirebaseDatabase
 
 @HiltAndroidApp
 class LocalGrubApplication : Application(), Configuration.Provider {
@@ -20,6 +21,8 @@ class LocalGrubApplication : Application(), Configuration.Provider {
         super.onCreate()
         createNotificationChannel()
         initCloudinary()
+
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true)
     }
 
     override fun getWorkManagerConfiguration(): Configuration {

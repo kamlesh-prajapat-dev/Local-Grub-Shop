@@ -10,6 +10,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,8 +21,7 @@ import javax.inject.Inject
 class MenuViewModel @Inject constructor(
     private val dishUseCase: DishUseCase,
     private val networkUtils: NetworkUtils
-): ViewModel() {
-
+) : ViewModel() {
     private val _uiState = MutableStateFlow<MenuUIState>(MenuUIState.Idle)
     val uiState: StateFlow<MenuUIState> get() = _uiState.asStateFlow()
 
@@ -27,42 +29,56 @@ class MenuViewModel @Inject constructor(
     val menuItems: StateFlow<List<FetchedDish>> get() = _menuItems.asStateFlow()
 
     fun onSetMenuItems(newDishes: List<FetchedDish>) {
-        _menuItems.update { newDishes }
+        _menuItems.value = newDishes
+    }
+
+    init {
+        loadMenu()
     }
 
     fun loadMenu() {
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { MenuUIState.Loading  }
-            if (networkUtils.isInternetAvailable()) {
-                val result = dishUseCase.getMenu()
-                _uiState.update { result }
-            } else {
-                _uiState.update { MenuUIState.IsInternetAvailable }
-            }
+        if (!networkUtils.isInternetAvailable()) {
+            _uiState.value = MenuUIState.IsInternetAvailable(null, null)
         }
+
+        dishUseCase.getMenu()
+            .onStart {
+                _uiState.value = MenuUIState.Loading
+            }
+            .onEach { state ->
+                _uiState.value = state
+            }
+            .launchIn(viewModelScope)
     }
 
     fun updateStockStatus(dish: FetchedDish, inStock: Boolean) {
-        _uiState.update { MenuUIState.Loading }
-        if (networkUtils.isInternetAvailable()) {
-            viewModelScope.launch {
-                val updateStockStatus = dishUseCase.updateStockStatus(dish.id, inStock)
-                _uiState.update { updateStockStatus }
-            }
-        } else {
-            _uiState.update { MenuUIState.IsInternetAvailable }
+        _uiState.value = MenuUIState.Loading
+        if (!networkUtils.isInternetAvailable()) {
+            _uiState.value = MenuUIState.IsInternetAvailable(dish, inStock)
+            return
+        }
+
+        viewModelScope.launch {
+            val updateStockStatus = dishUseCase.updateStockStatus(dish.id, inStock)
+            _uiState.value = updateStockStatus
         }
     }
 
     fun deleteMenuItem(dish: FetchedDish) {
-        _uiState.update { MenuUIState.Loading }
-        if (networkUtils.isInternetAvailable()) {
-            viewModelScope.launch {
-                val deleteDish = dishUseCase.deleteDish(dish.id)
-                _uiState.update { deleteDish }
-            }
-        } else {
-            _uiState.update { MenuUIState.IsInternetAvailable }
+        _uiState.value = MenuUIState.Loading
+
+        if (!networkUtils.isInternetAvailable()) {
+            _uiState.value = MenuUIState.IsInternetAvailable(null, null)
+            return
         }
+
+        viewModelScope.launch {
+            val deleteDish = dishUseCase.deleteDish(dish.id)
+            _uiState.value = deleteDish
+        }
+    }
+
+    fun reset() {
+        _uiState.value = MenuUIState.Idle
     }
 }

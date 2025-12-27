@@ -20,6 +20,8 @@ import com.example.localgrubshop.databinding.FragmentMenuBinding
 import com.example.localgrubshop.ui.adapter.MenuAdapter
 import com.example.localgrubshop.ui.sharedviewmodel.SharedMDViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -39,11 +41,6 @@ class MenuFragment : Fragment() {
     ): View {
         _binding = FragmentMenuBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.loadMenu()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -75,7 +72,7 @@ class MenuFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect {
+                viewModel.uiState.collect { it ->
                     when (it) {
                         is MenuUIState.Failure -> {
                             onSetLoading(false)
@@ -85,7 +82,7 @@ class MenuFragment : Fragment() {
                             onSetLoading(false)
                         }
 
-                        MenuUIState.IsInternetAvailable -> {
+                        is MenuUIState.IsInternetAvailable -> {
                             showNoInternetDialog()
                             onSetLoading(false)
                         }
@@ -100,12 +97,10 @@ class MenuFragment : Fragment() {
                         }
 
                         is MenuUIState.DeleteSuccess -> {
-                            viewModel.loadMenu()
                             onSetLoading(false)
                         }
 
                         is MenuUIState.StockUpdateSuccess -> {
-                            viewModel.loadMenu()
                             onSetLoading(false)
                         }
                     }
@@ -151,7 +146,6 @@ class MenuFragment : Fragment() {
             .setMessage(R.string.check_internet_connection)
             .setPositiveButton(R.string.ok) { dialog, _ ->
                 dialog.dismiss()
-                viewModel.loadMenu()
             }
             .create()
             .show()

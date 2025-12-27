@@ -6,23 +6,38 @@ import com.example.localgrubshop.domain.models.DishResult
 import com.example.localgrubshop.domain.repository.DishRepository
 import com.example.localgrubshop.ui.screens.dish.DishUIState
 import com.example.localgrubshop.ui.screens.menu.MenuUIState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DishUseCase @Inject constructor(
     private val dishRepository: DishRepository
 ) {
-    suspend fun getMenu(): MenuUIState {
-        return when(val result = dishRepository.getMenu()) {
-            is DishResult.GetSuccess -> {
-                MenuUIState.Success(result.dishes)
-            }
+    fun getMenu(): Flow<MenuUIState> {
+        return dishRepository.getMenu()
+            .map { dishResult ->
+                when (dishResult) {
+                    is DishResult.GetSuccess -> {
+                        val dishes = dishResult.dishes
 
-            is DishResult.Failure -> {
-                MenuUIState.Failure(result.e)
-            }
+                        if (dishes.isNotEmpty()) {
+                            MenuUIState.Success(dishes)
+                        } else {
+                            MenuUIState.Success(emptyList())
+                        }
+                    }
 
-            else -> MenuUIState.Idle
-        }
+                    is DishResult.Failure -> {
+                        MenuUIState.Failure(dishResult.e)
+                    }
+
+                    else -> MenuUIState.Idle
+                }
+            }
+            .catch { exception ->
+                emit(MenuUIState.Failure(exception as Exception))
+            }
     }
 
     suspend fun deleteDish(dishId: String): MenuUIState {

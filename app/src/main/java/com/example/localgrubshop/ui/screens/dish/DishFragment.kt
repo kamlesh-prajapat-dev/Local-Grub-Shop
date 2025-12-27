@@ -134,6 +134,7 @@ class DishFragment : Fragment() {
                         }
                         is DishUIState.Error -> {
                             Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                            onSetLoading(false)
                         }
                     }
                 }

@@ -14,6 +14,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -36,6 +39,11 @@ class HomeViewModel @Inject constructor(
     // StateFlow for UI state that will be observed by HomeFragment and update UI accordingly
     private val _uiState = MutableStateFlow<HomeUIState>(HomeUIState.Idle)
     val uiState: StateFlow<HomeUIState> get() = _uiState.asStateFlow()
+
+    init {
+        loadOrderHistoryItems()
+    }
+
     // method to load FCM token from local database and if not present then fetch from firebase, save it to local database
     fun saveFCMToken() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -55,19 +63,23 @@ class HomeViewModel @Inject constructor(
 
         if (!networkUtils.isInternetAvailable()) {
             _uiState.value = HomeUIState.NoInternet
-            return
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.value = orderUseCase.getOrders()
-        }
+        orderUseCase.getOrders()
+            .onStart {
+                _uiState.value = HomeUIState.Loading
+            }
+            .onEach { state ->
+                _uiState.value = state
+            }
+            .launchIn(viewModelScope)
     }
     // method to filter orders based on status and date range
     fun filterOrders(status: String?, startDate: Date?, endDate: Date?) {
         val currentList = historyOrder.value
         val filteredList = currentList.filter { order ->
             val statusMatch = status == null || order.status == status
-            val dateMatch = isDateInRange(order.placeAt.toDate(), startDate, endDate)
+            val dateMatch = isDateInRange(Date(order.placeAt), startDate, endDate)
             statusMatch && dateMatch
         }
         _historyOrder.value = filteredList

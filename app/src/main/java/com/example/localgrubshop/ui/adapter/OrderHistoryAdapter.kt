@@ -31,14 +31,20 @@ class OrderHistoryAdapter(private val onOrderClick: (Order) -> Unit) :
         // load data into view
         fun bind(order: Order) {
             binding.customerNameTextView.text = order.userName
-            binding.orderDateTextView.text = formatDate(order.placeAt.toDate())
+            binding.orderDateTextView.text = formatDate(Date(order.placeAt))
             binding.totalPriceTextView.text = "Rs. ${order.totalPrice}"
 
             val status = order.status
-            if (status == OrderStatus.DELIVERED) {
-                binding.orderStatusTextView.setBackgroundResource(com.example.localgrubshop.R.drawable.green_status_background)
-            } else {
-                binding.orderStatusTextView.setBackgroundResource(com.example.localgrubshop.R.drawable.orange_status_background)
+            when (status) {
+                OrderStatus.DELIVERED -> {
+                    binding.orderStatusTextView.setBackgroundResource(com.example.localgrubshop.R.drawable.green_status_background)
+                }
+                OrderStatus.CANCELLED -> {
+                    binding.orderStatusTextView.setBackgroundResource(com.example.localgrubshop.R.drawable.red_status_background)
+                }
+                else -> {
+                    binding.orderStatusTextView.setBackgroundResource(com.example.localgrubshop.R.drawable.orange_status_background)
+                }
             }
             binding.orderStatusTextView.text = order.status
         }

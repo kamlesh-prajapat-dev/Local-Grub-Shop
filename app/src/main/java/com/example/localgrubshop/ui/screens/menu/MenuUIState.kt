@@ -7,7 +7,7 @@ sealed class MenuUIState {
     object Loading: MenuUIState()
     data class Success(val data: List<FetchedDish>): MenuUIState()
     data class Failure(val e: Exception): MenuUIState()
-    object IsInternetAvailable: MenuUIState()
+    data class IsInternetAvailable(val dish: FetchedDish? = null, val isChecked: Boolean? = null): MenuUIState()
     data class StockUpdateSuccess(val isSuccess: Boolean): MenuUIState()
     data class DeleteSuccess(val isSuccess: Boolean): MenuUIState()
 }

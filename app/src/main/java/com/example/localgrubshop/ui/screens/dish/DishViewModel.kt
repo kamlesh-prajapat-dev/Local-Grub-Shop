@@ -108,6 +108,7 @@ class DishViewModel @Inject constructor(
         imageUrl: String,
         isAvailable: Boolean
     ) {
+
         val newDish = _dish.value
         val newDishToSave = newDish?.copy(
             name = name,
@@ -135,7 +136,7 @@ class DishViewModel @Inject constructor(
 
                 else -> Unit
             }
-            _uiState.update { result as DishUIState }
+            _uiState.value = result as DishUIState
         }
     }
 }

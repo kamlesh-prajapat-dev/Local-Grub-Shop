@@ -141,26 +141,32 @@ class EachOrderStatusFragment : Fragment() {
         binding.orderStatusTextView.text = status
         when (status) {
             OrderStatus.PLACED -> {
+                binding.orderStatusTextView.setBackgroundResource(R.drawable.orange_status_background)
                 binding.btnUpdateOrderStatus.text = "Confirm Order"
                 binding.btnUpdateOrderStatus.isEnabled = true
             }
             OrderStatus.CONFIRMED -> {
+                binding.orderStatusTextView.setBackgroundResource(R.drawable.orange_status_background)
                 binding.btnUpdateOrderStatus.text = "Start Preparing"
                 binding.btnUpdateOrderStatus.isEnabled = true
             }
             OrderStatus.PREPARING -> {
+                binding.orderStatusTextView.setBackgroundResource(R.drawable.orange_status_background)
                 binding.btnUpdateOrderStatus.text = "Out for Delivery"
                 binding.btnUpdateOrderStatus.isEnabled = true
             }
             OrderStatus.OUT_FOR_DELIVERY -> {
+                binding.orderStatusTextView.setBackgroundResource(R.drawable.orange_status_background)
                 binding.btnUpdateOrderStatus.text = "Delivered"
                 binding.btnUpdateOrderStatus.isEnabled = true
             }
             OrderStatus.DELIVERED -> {
+                binding.orderStatusTextView.setBackgroundResource(R.drawable.green_status_background)
                 binding.btnUpdateOrderStatus.text = "Order Complete"
                 binding.btnUpdateOrderStatus.isEnabled = false
             }
             else -> {
+                binding.orderStatusTextView.setBackgroundResource(R.drawable.red_status_background)
                 binding.btnUpdateOrderStatus.visibility = View.GONE
             }
         }

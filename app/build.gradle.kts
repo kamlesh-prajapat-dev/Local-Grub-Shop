@@ -90,6 +90,9 @@ dependencies {
     // Firebase Cloud Messaging
     implementation("com.google.firebase:firebase-messaging:25.0.1")
 
+    // Firebase Realtime Database
+    implementation("com.google.firebase:firebase-database")
+
     // Dagger and ksp
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

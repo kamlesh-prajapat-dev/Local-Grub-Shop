@@ -38,11 +38,6 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.loadOrderHistoryItems()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -160,7 +155,6 @@ class HomeFragment : Fragment() {
             .setMessage(R.string.check_internet_connection)
             .setPositiveButton(R.string.ok) { dialog, _ ->
                 dialog.dismiss()
-                viewModel.loadOrderHistoryItems()
             }
             .create()
             .show()

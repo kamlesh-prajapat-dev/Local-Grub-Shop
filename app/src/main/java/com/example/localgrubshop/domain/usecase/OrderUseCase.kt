@@ -11,6 +11,9 @@ import com.example.localgrubshop.domain.repository.UserRepository
 import com.example.localgrubshop.ui.screens.eachorderstatus.EachOrderUIState
 import com.example.localgrubshop.ui.screens.home.HomeUIState
 import com.example.localgrubshop.worker.SenderNotificationWorker
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class OrderUseCase @Inject constructor(
@@ -19,19 +22,26 @@ class OrderUseCase @Inject constructor(
     private val userRepository: UserRepository,
     private val workManager: WorkManager
 ) {
-    suspend fun getOrders(): HomeUIState {
-        return when (val result = orderRepository.getOrders()) {
-            is OrderResult.Success -> {
-                val orders = result.orders.sortedByDescending { it.placeAt }
-                return HomeUIState.Success(orders)
-            }
+    fun getOrders(): Flow<HomeUIState> {
+        return orderRepository.getOrders()
+            .map { result ->
+                when (result) {
+                    is OrderResult.Success -> {
+                        val sortedOrders =
+                            result.orders.sortedByDescending { it.placeAt }
+                        HomeUIState.Success(sortedOrders)
+                    }
 
-            is OrderResult.Error -> {
-                return HomeUIState.Error(result.e)
-            }
+                    is OrderResult.Error -> {
+                        HomeUIState.Error(result.e)
+                    }
 
-            is OrderResult.UpdateSuccess -> HomeUIState.Idle
-        }
+                    else -> HomeUIState.Idle
+                }
+            }
+            .catch {
+                emit(HomeUIState.Error(it as Exception))
+            }
     }
 
     suspend fun updateOrderStatus(
