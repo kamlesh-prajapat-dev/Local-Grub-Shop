@@ -44,14 +44,41 @@ class OrderRepositoryImpl @Inject constructor(
         newStatus: String
     ): OrderResult {
         return try {
+            val update = mapOf<String, Any>(
+                OrderFields.STATUS to newStatus
+            )
+
             realtimeDatabase.getReference(OrderFields.COLLECTION).child(orderId)
-                .child(OrderFields.STATUS)
-                .setValue(newStatus)
+                .updateChildren(update)
                 .await()
 
             OrderResult.UpdateSuccess(true)
         } catch (e: Exception) {
             OrderResult.Error(e)
+        }
+    }
+
+    override fun observeOrderById(orderId: String): Flow<OrderResult>  = callbackFlow {
+        val ref = realtimeDatabase.getReference(OrderFields.COLLECTION)
+        val query = ref.child(orderId)
+
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val order = snapshot.getValue(Order::class.java)?.copy(id = orderId)
+                if (order != null) {
+                    trySend(OrderResult.OrderGetSuccessByOrderId(order))
+                } else {
+                    trySend(OrderResult.Error(Exception("Order not found")))
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+
+        query.addValueEventListener(listener)
+        awaitClose {
+            query.removeEventListener(listener)
         }
     }
 }

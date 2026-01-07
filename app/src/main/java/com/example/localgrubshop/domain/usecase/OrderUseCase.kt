@@ -49,7 +49,7 @@ class OrderUseCase @Inject constructor(
         newStatus: String,
         userId: String
     ): EachOrderUIState {
-        return when (val result = orderRepository.updateOrderStatus(orderId, newStatus)) {
+        return when (val result = orderRepository.updateOrderStatus(orderId = orderId, newStatus = newStatus)) {
             is OrderResult.UpdateSuccess -> {
                 when(val result2 = userRepository.getToken(userId)) {
                     is com.example.localgrubshop.domain.models.UserResult.Success -> {
@@ -82,7 +82,24 @@ class OrderUseCase @Inject constructor(
                 return EachOrderUIState.Error(result.e)
             }
 
-            is OrderResult.Success -> EachOrderUIState.Idle
+            else -> EachOrderUIState.Idle
         }
+    }
+
+    fun observeOrderById(orderId: String): Flow<EachOrderUIState> {
+        return orderRepository.observeOrderById(orderId)
+            .map { result ->
+                when(result) {
+                    is OrderResult.OrderGetSuccessByOrderId -> {
+                        EachOrderUIState.OrderGetSuccess(result.order)
+                    }
+                    is OrderResult.Error -> {
+                        EachOrderUIState.Error(result.e)
+                    }
+                    else -> EachOrderUIState.Idle
+                }
+            }.catch {
+                emit(EachOrderUIState.Error(it as Exception))
+            }
     }
 }

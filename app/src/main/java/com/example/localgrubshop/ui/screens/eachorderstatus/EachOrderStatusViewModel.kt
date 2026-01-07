@@ -9,6 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,7 +26,7 @@ class EachOrderStatusViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<EachOrderUIState>(EachOrderUIState.Idle)
     val uiState: StateFlow<EachOrderUIState> get() = _uiState.asStateFlow()
 
-    fun onSetOrder(order: Order) {
+    fun onSetOrder(order: Order?) {
         _order.value = order
     }
 
@@ -38,6 +41,23 @@ class EachOrderStatusViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = orderUseCase.updateOrderStatus(orderId = order.id, newStatus = newStatus, userId = order.userId)
         }
+    }
+
+    fun observeOrderById(orderId: String) {
+        if (!networkUtils.isInternetAvailable()) {
+            _uiState.value = EachOrderUIState.NoInternet
+            return
+        }
+
+        orderUseCase.observeOrderById(orderId)
+            .onStart {
+                _uiState.value = EachOrderUIState.Loading
+            }
+            .onEach { state ->
+                _uiState.value = state
+
+            }
+            .launchIn(viewModelScope)
     }
 
     fun reset() {
