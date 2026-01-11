@@ -33,6 +33,12 @@ class EachOrderStatusFragment : Fragment() {
     private val sharedViewModel: SharedHFToEOSFViewModel by activityViewModels() // Shared view model between HomeFragment and EachOrderStatusFragment for data share
     private var nextStatus: String? = null // next status of order for help to update order status
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        observeSharedViewModel()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -44,7 +50,6 @@ class EachOrderStatusFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeSharedViewModel()
         onSetRecyclerView()
         setupClickListeners()
         observeOrderStatusUpdate()

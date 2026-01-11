@@ -19,6 +19,7 @@ import com.example.localgrubshop.databinding.FragmentHomeBinding
 import com.example.localgrubshop.ui.adapter.OrderHistoryAdapter
 import com.example.localgrubshop.ui.components.FilterBottomSheetFragment
 import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
+import com.google.firebase.database.DatabaseError
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -119,12 +120,12 @@ class HomeFragment : Fragment() {
                         }
 
                         is HomeUIState.Error -> {
-                            onSetLoading(false)
                             Toast.makeText(
                                 requireContext(),
                                 it.e.message ?: "An error occurred",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            onSetLoading(false)
                         }
 
                         is HomeUIState.UpdateSuccess -> {

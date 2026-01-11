@@ -34,6 +34,12 @@ class DishFragment : Fragment() {
     private val sharedMDViewModel: SharedMDViewModel by activityViewModels()
     private var imageUri: Uri? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        observeSharedViewModel()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -72,17 +78,15 @@ class DishFragment : Fragment() {
         }
     }
 
+    private fun observeSharedViewModel() {
+        val dish = sharedMDViewModel.dish.value
+        if (dish != null) {
+            viewModel.onSetDish(dish)
+        }
+    }
+
     @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                sharedMDViewModel.dish.collect {
-                    if (it != null) {
-                        viewModel.onSetDish(it)
-                    }
-                }
-            }
-        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
