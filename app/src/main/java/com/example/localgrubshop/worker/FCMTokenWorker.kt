@@ -18,8 +18,9 @@ class FCMTokenWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val token = inputData.getString("FCM_TOKEN") ?: return Result.failure()
 
+        val adminUser = shopOwnerUseCase.getLocalAdminUser()
         return try {
-            shopOwnerUseCase.saveFCMToken(token)
+            shopOwnerUseCase.saveFCMToken(token, adminUser?.id ?: "")
             Result.success()
         } catch (e: Exception) {
             Log.e("FCMTokenWorker", "Error saving FCM token", e)

@@ -9,21 +9,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.localgrubshop.R
 import com.example.localgrubshop.databinding.FragmentDishBinding
-import com.example.localgrubshop.ui.sharedviewmodel.SharedMDViewModel
+import com.example.localgrubshop.domain.mapper.firebase.WriteReqDomainFailure
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.repeatOnLifecycle
 
 @AndroidEntryPoint
 class DishFragment : Fragment() {
@@ -31,13 +31,16 @@ class DishFragment : Fragment() {
     private var _binding: FragmentDishBinding? = null
     private val binding get() = _binding!!
     private val viewModel: DishViewModel by viewModels()
-    private val sharedMDViewModel: SharedMDViewModel by activityViewModels()
+    private val args: DishFragmentArgs by navArgs()
     private var imageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        observeSharedViewModel()
+        val dish = args.dish
+        if (dish != null) {
+            viewModel.onSetDish(dish)
+        }
     }
 
     override fun onCreateView(
@@ -77,14 +80,6 @@ class DishFragment : Fragment() {
             }
         }
     }
-
-    private fun observeSharedViewModel() {
-        val dish = sharedMDViewModel.dish.value
-        if (dish != null) {
-            viewModel.onSetDish(dish)
-        }
-    }
-
     @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
 
@@ -118,7 +113,24 @@ class DishFragment : Fragment() {
                 viewModel.uiState.collect {
                     when(it) {
                         is DishUIState.Failure -> {
-                            Toast.makeText(requireContext(), it.e.message, Toast.LENGTH_SHORT).show()
+                            when(val failure = it.failure) {
+                                is WriteReqDomainFailure.Cancelled -> Unit
+                                is WriteReqDomainFailure.DataNotFound -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                WriteReqDomainFailure.NoInternet -> {
+                                    showNoInternetDialog()
+                                }
+                                is WriteReqDomainFailure.PermissionDenied -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                is WriteReqDomainFailure.Unknown -> {
+                                    Toast.makeText(requireContext(), failure.cause.message, Toast.LENGTH_LONG).show()
+                                }
+                                is WriteReqDomainFailure.ValidationError -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                            }
                             onSetLoading(false)
                         }
                         DishUIState.Idle -> {
@@ -172,6 +184,8 @@ class DishFragment : Fragment() {
     }
     private fun onSetLoading(isLoading: Boolean) {
         binding.progressBar.isVisible = isLoading
+
+        binding.saveButton.isEnabled = !isLoading
     }
 
     override fun onDestroyView() {

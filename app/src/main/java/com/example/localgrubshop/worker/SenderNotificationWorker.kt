@@ -7,7 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.localgrubshop.R
 import com.example.localgrubshop.data.models.NotificationRequest
-import com.example.localgrubshop.domain.models.UserResult
+import com.example.localgrubshop.domain.models.result.UserResult
 import com.example.localgrubshop.domain.repository.NotificationRepository
 import com.example.localgrubshop.domain.repository.UserRepository
 import dagger.assisted.Assisted

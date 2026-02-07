@@ -1,4 +1,4 @@
-package com.example.localgrubshop.domain.models
+package com.example.localgrubshop.domain.models.result
 
 sealed interface UserResult {
     data class Success(val token: String) : UserResult

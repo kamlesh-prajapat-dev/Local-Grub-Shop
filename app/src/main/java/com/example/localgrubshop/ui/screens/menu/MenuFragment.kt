@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -17,11 +16,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.R
 import com.example.localgrubshop.data.models.FetchedDish
 import com.example.localgrubshop.databinding.FragmentMenuBinding
+import com.example.localgrubshop.domain.mapper.firebase.GetReqDomainFailure
+import com.example.localgrubshop.domain.mapper.firebase.WriteReqDomainFailure
 import com.example.localgrubshop.ui.adapter.MenuAdapter
-import com.example.localgrubshop.ui.sharedviewmodel.SharedMDViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.forEach
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -29,11 +27,29 @@ class MenuFragment : Fragment() {
 
     private var _binding: FragmentMenuBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: MenuViewModel by viewModels()
-    private val sharedViewModel: SharedMDViewModel by activityViewModels()
+    private val menuAdapter: MenuAdapter by lazy {
+        MenuAdapter(
+            onEditClick = { dish ->
+                // Navigate to an edit screen, passing the dish ID
+                val action = MenuFragmentDirections.actionMenuFragmentToDishFragment(dish)
+                findNavController().navigate(action)
+                Toast.makeText(requireContext(), "Edit ${dish.name}", Toast.LENGTH_SHORT).show()
+            },
+            onDeleteClick = { dish ->
+                showDeleteConfirmationDialog(dish)
+            },
+            onStockChange = { dish, isChecked ->
+                viewModel.updateStockStatus(dish, isChecked)
+            }
+        )
+    }
 
-    private lateinit var menuAdapter: MenuAdapter
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        viewModel.loadMenu()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,29 +68,54 @@ class MenuFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        menuAdapter = MenuAdapter(
-            onEditClick = { dish ->
-                // Navigate to an edit screen, passing the dish ID
-                sharedViewModel.onSetDish(dish)
-                findNavController().navigate(R.id.action_menuFragment_to_dishFragment)
-                Toast.makeText(requireContext(), "Edit ${dish.name}", Toast.LENGTH_SHORT).show()
-            },
-            onDeleteClick = { dish ->
-                showDeleteConfirmationDialog(dish)
-            },
-            onStockChange = { dish, isChecked ->
-                viewModel.updateStockStatus(dish, isChecked)
-            }
-        )
         binding.foodItemsRecyclerView.adapter = menuAdapter
     }
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { it ->
+                viewModel.uiState.collect {
                     when (it) {
-                        is MenuUIState.Failure -> {
+                        is MenuUIState.GetFailure -> {
+                            when (val failure = it.failure) {
+                                is GetReqDomainFailure.DataNotFount -> {
+                                    viewModel.onSetMenuItems(emptyList())
+                                }
+                                is GetReqDomainFailure.InvalidData -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                GetReqDomainFailure.Network -> {
+                                    showNoInternetDialog()
+                                }
+                                is GetReqDomainFailure.PermissionDenied -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                is GetReqDomainFailure.Unknown -> {
+                                    Toast.makeText(requireContext(), failure.cause.message, Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            onSetLoading(false)
+                        }
+
+                        is MenuUIState.WriteFailure -> {
+                            when(val failure = it.failure) {
+                                is WriteReqDomainFailure.Cancelled -> Unit
+                                is WriteReqDomainFailure.DataNotFound -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                WriteReqDomainFailure.NoInternet -> {
+                                    showNoInternetDialog()
+                                }
+                                is WriteReqDomainFailure.PermissionDenied -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                is WriteReqDomainFailure.Unknown -> {
+                                    Toast.makeText(requireContext(), failure.cause.message, Toast.LENGTH_LONG).show()
+                                }
+                                is WriteReqDomainFailure.ValidationError -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                            }
                             onSetLoading(false)
                         }
 
@@ -111,7 +152,14 @@ class MenuFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.menuItems.collect { dishes ->
-                    menuAdapter.submitList(dishes)
+                    if (dishes.isNotEmpty()) {
+                        binding.emptyStateTxt.isVisible = false
+                        binding.foodItemsRecyclerViewContainer.isVisible = true
+                        menuAdapter.submitList(dishes)
+                    } else {
+                        binding.emptyStateTxt.isVisible = true
+                        binding.foodItemsRecyclerViewContainer.isVisible = false
+                    }
                 }
             }
         }
@@ -120,7 +168,8 @@ class MenuFragment : Fragment() {
     private fun setupClickListeners() {
         binding.addFoodItemFab.setOnClickListener {
             // Navigate to an add/edit screen
-            findNavController().navigate(R.id.action_menuFragment_to_dishFragment)
+            val action = MenuFragmentDirections.actionMenuFragmentToDishFragment(null)
+            findNavController().navigate(action)
             Toast.makeText(requireContext(), "Add new food item", Toast.LENGTH_SHORT).show()
         }
 
@@ -153,12 +202,11 @@ class MenuFragment : Fragment() {
 
     private fun onSetLoading(isLoading: Boolean) {
         binding.progressBar.isVisible = isLoading
+        binding.addFoodItemFab.isEnabled = !isLoading
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-
-        sharedViewModel.reset()
     }
 }

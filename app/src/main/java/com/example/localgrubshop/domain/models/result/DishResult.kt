@@ -1,4 +1,4 @@
-package com.example.localgrubshop.domain.models
+package com.example.localgrubshop.domain.models.result
 
 import com.example.localgrubshop.data.models.NewDish
 import com.example.localgrubshop.data.models.FetchedDish

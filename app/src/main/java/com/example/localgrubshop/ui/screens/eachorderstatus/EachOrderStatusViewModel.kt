@@ -17,8 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EachOrderStatusViewModel @Inject constructor(
-    private val orderUseCase: OrderUseCase, // Order Use case field
-    private val networkUtils: NetworkUtils //
+    private val orderUseCase: OrderUseCase,
+    private val networkUtils: NetworkUtils
 ) : ViewModel() {
     private val _order = MutableStateFlow<Order?>(null)
     val order: StateFlow<Order?> get() = _order.asStateFlow()

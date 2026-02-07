@@ -37,11 +37,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="No orders have been placed yet."
+        android:text="No orders have been received yet. \nThey will appear here once customers place them."
+        android:textAlignment="center"
         android:textColor="@color/orange"
-        android:textSize="24sp"
+        android:textSize="16sp"
         android:textStyle="bold"
-        android:elevation="10dp"
         android:visibility="gone"/>
 
     <LinearLayout
@@ -49,6 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <com.google.android.material.chip.Chip

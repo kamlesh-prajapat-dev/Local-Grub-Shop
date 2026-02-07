@@ -6,6 +6,7 @@ import androidx.work.WorkManager
 import com.example.localgrubshop.domain.repository.NotificationRepository
 import com.example.localgrubshop.utils.NetworkUtils
 import com.example.localgrubshop.utils.NotificationHelper
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,5 +47,11 @@ object AppModule {
     @Singleton
     fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
         return WorkManager.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return Gson()
     }
 }

@@ -15,11 +15,11 @@
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/orange"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:navigationIconTint="@color/white"
-            app:titleTextColor="@color/white"
-            android:background="@color/orange"
-            app:title="Menu" />
+            app:title="Menu"
+            app:titleTextColor="@color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -29,13 +29,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone"
-        android:elevation="10dp"/>
+        android:elevation="10dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/emptyStateTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textAlignment="center"
+        android:text="The menu is currently empty. \nPlease add dishes to make them available."
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@color/orange"
+        android:visibility="gone"/>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/foodItemsRecyclerViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/foodItemsRecyclerView"
             android:layout_width="match_parent"
@@ -51,9 +66,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:layout_margin="16dp"
+        android:contentDescription="Add Food Item"
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/orange"
-        app:tint="@android:color/white"
-        android:contentDescription="Add Food Item" />
+        app:tint="@android:color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

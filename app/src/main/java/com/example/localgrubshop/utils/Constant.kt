@@ -20,8 +20,9 @@ object OrderFields {
 }
 
 object ShopOwnerFields {
-    const val COLLECTION = "owners"
-    const val TOKEN = "token"
+    const val COLLECTION = "admins"
+    const val TOKEN_COLLECTION_NAME = "tokens"
+    const val TOKEN = "fcmToken"
 }
 
 object UserFields {

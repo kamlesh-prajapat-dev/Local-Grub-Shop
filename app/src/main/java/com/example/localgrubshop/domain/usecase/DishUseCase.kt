@@ -2,7 +2,9 @@ package com.example.localgrubshop.domain.usecase
 
 import com.example.localgrubshop.data.models.NewDish
 import com.example.localgrubshop.data.models.FetchedDish
-import com.example.localgrubshop.domain.models.DishResult
+import com.example.localgrubshop.domain.mapper.firebase.toGetReqDomainFailure
+import com.example.localgrubshop.domain.mapper.firebase.toWriteReqDomainFailure
+import com.example.localgrubshop.domain.models.result.DishResult
 import com.example.localgrubshop.domain.repository.DishRepository
 import com.example.localgrubshop.ui.screens.dish.DishUIState
 import com.example.localgrubshop.ui.screens.menu.MenuUIState
@@ -10,35 +12,30 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
+@Singleton
 class DishUseCase @Inject constructor(
     private val dishRepository: DishRepository
 ) {
     fun getMenu(): Flow<MenuUIState> {
         return dishRepository.getMenu()
-            .map { dishResult ->
-                when (dishResult) {
-                    is DishResult.GetSuccess -> {
-                        val dishes = dishResult.dishes
+            .map { result ->
+                when (result) {
+                    is DishResult.GetSuccess ->
+                        MenuUIState.Success(result.dishes)
 
-                        if (dishes.isNotEmpty()) {
-                            MenuUIState.Success(dishes)
-                        } else {
-                            MenuUIState.Success(emptyList())
-                        }
-                    }
-
-                    is DishResult.Failure -> {
-                        MenuUIState.Failure(dishResult.e)
-                    }
-
+                    is DishResult.Failure ->
+                        MenuUIState.GetFailure(result.e.toGetReqDomainFailure("Dishes Data"))
                     else -> MenuUIState.Idle
                 }
             }
-            .catch { exception ->
-                emit(MenuUIState.Failure(exception as Exception))
+            .catch { throwable ->
+                emit(MenuUIState.GetFailure(throwable.toGetReqDomainFailure("Dishes Data")))
             }
     }
+
 
     suspend fun deleteDish(dishId: String): MenuUIState {
         return when(val result = dishRepository.deleteDish(dishId = dishId)) {
@@ -47,7 +44,7 @@ class DishUseCase @Inject constructor(
             }
 
             is DishResult.Failure -> {
-                MenuUIState.Failure(result.e)
+                MenuUIState.WriteFailure(result.e.toWriteReqDomainFailure(dishId))
             }
 
             else -> MenuUIState.Idle
@@ -61,7 +58,7 @@ class DishUseCase @Inject constructor(
             }
 
             is DishResult.Failure -> {
-                MenuUIState.Failure(result.e)
+                MenuUIState.WriteFailure(result.e.toWriteReqDomainFailure(dishId))
             }
 
             else -> MenuUIState.Idle
@@ -75,7 +72,7 @@ class DishUseCase @Inject constructor(
             }
 
             is DishResult.Failure -> {
-                DishUIState.Failure(result.e)
+                DishUIState.Failure(result.e.toWriteReqDomainFailure(newDish))
             }
 
             else -> DishUIState.Idle
@@ -88,22 +85,26 @@ class DishUseCase @Inject constructor(
                 val newDish = result.dish
                 val id = result.id
                 DishUIState.Success(
-                    FetchedDish(
-                        id = id,
-                        name = newDish.name,
-                        description = newDish.description,
-                        price = newDish.price,
-                        thumbnail = newDish.thumbnail,
-                        available = newDish.available
-                    )
+                    convertNewDishToFetchedDish(newDish = newDish, id = id)
                 )
             }
 
             is DishResult.Failure -> {
-                DishUIState.Failure(result.e)
+                DishUIState.Failure(result.e.toWriteReqDomainFailure(newDish))
             }
 
             else -> DishUIState.Idle
         }
+    }
+
+    private fun convertNewDishToFetchedDish(newDish: NewDish, id: String): FetchedDish {
+        return FetchedDish(
+            id = id,
+            name = newDish.name,
+            description = newDish.description,
+            price = newDish.price,
+            thumbnail = newDish.thumbnail,
+            available = newDish.available
+        )
     }
 }

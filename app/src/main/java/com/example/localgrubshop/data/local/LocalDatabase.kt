@@ -2,22 +2,27 @@ package com.example.localgrubshop.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.example.localgrubshop.data.models.AdminUser
+import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LocalDatabase @Inject constructor(
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
+    private val gson: Gson
 ) {
     companion object {
-        private const val TOKEN = "token"
+        private const val USER = "user"
     }
 
-    fun setToken(token: String) {
-        sharedPreferences.edit { putString(TOKEN, token) }
+    fun setUser(user: AdminUser) {
+        val json = gson.toJson(user)
+        sharedPreferences.edit { putString(USER, json) }
     }
 
-    fun getToken(): String? {
-        return sharedPreferences.getString(TOKEN, null)
+    fun getUser(): AdminUser? {
+        val json = sharedPreferences.getString(USER, null) ?: return null
+        return gson.fromJson(json, AdminUser::class.java)
     }
 }

@@ -1,6 +1,6 @@
 package com.example.localgrubshop.domain.repository
 
-import com.example.localgrubshop.domain.models.OrderResult
+import com.example.localgrubshop.domain.models.result.OrderResult
 import kotlinx.coroutines.flow.Flow
 
 interface OrderRepository {

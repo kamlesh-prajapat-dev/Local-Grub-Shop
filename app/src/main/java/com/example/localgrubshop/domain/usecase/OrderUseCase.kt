@@ -4,7 +4,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.localgrubshop.data.models.NotificationRequest
-import com.example.localgrubshop.domain.models.OrderResult
+import com.example.localgrubshop.domain.mapper.firebase.toGetReqDomainFailure
+import com.example.localgrubshop.domain.mapper.firebase.toWriteReqDomainFailure
+import com.example.localgrubshop.domain.models.result.OrderResult
+import com.example.localgrubshop.domain.models.result.UserResult
 import com.example.localgrubshop.domain.repository.NotificationRepository
 import com.example.localgrubshop.domain.repository.OrderRepository
 import com.example.localgrubshop.domain.repository.UserRepository
@@ -15,7 +18,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class OrderUseCase @Inject constructor(
     private val orderRepository: OrderRepository,
     private val notificationRepository: NotificationRepository,
@@ -32,15 +37,15 @@ class OrderUseCase @Inject constructor(
                         HomeUIState.Success(sortedOrders)
                     }
 
-                    is OrderResult.Error -> {
-                        HomeUIState.Error(result.e)
+                    is OrderResult.Failure -> {
+                        HomeUIState.Failure(result.e.toGetReqDomainFailure("Order Data"))
                     }
 
                     else -> HomeUIState.Idle
                 }
             }
             .catch {
-                emit(HomeUIState.Error(it as Exception))
+                emit(HomeUIState.Failure(it.toGetReqDomainFailure("Order Data")))
             }
     }
 
@@ -52,7 +57,7 @@ class OrderUseCase @Inject constructor(
         return when (val result = orderRepository.updateOrderStatus(orderId = orderId, newStatus = newStatus)) {
             is OrderResult.UpdateSuccess -> {
                 when(val result2 = userRepository.getToken(userId)) {
-                    is com.example.localgrubshop.domain.models.UserResult.Success -> {
+                    is UserResult.Success -> {
                         val token = result2.token
                         notificationRepository.sendNotification(
                             NotificationRequest(
@@ -63,7 +68,7 @@ class OrderUseCase @Inject constructor(
                             )
                         )
                     }
-                    is com.example.localgrubshop.domain.models.UserResult.Error -> {
+                    is UserResult.Error -> {
                         val workRequest = OneTimeWorkRequestBuilder<SenderNotificationWorker>()
                             .setInputData(
                                 workDataOf("ORDER_ID" to orderId,
@@ -78,8 +83,8 @@ class OrderUseCase @Inject constructor(
                 EachOrderUIState.Success(result.flag)
             }
 
-            is OrderResult.Error -> {
-                return EachOrderUIState.Error(result.e)
+            is OrderResult.Failure -> {
+                return EachOrderUIState.WriteFailure(result.e.toWriteReqDomainFailure(orderId))
             }
 
             else -> EachOrderUIState.Idle
@@ -93,13 +98,13 @@ class OrderUseCase @Inject constructor(
                     is OrderResult.OrderGetSuccessByOrderId -> {
                         EachOrderUIState.OrderGetSuccess(result.order)
                     }
-                    is OrderResult.Error -> {
-                        EachOrderUIState.Error(result.e)
+                    is OrderResult.Failure -> {
+                        EachOrderUIState.GetFailure(result.e.toGetReqDomainFailure(orderId))
                     }
                     else -> EachOrderUIState.Idle
                 }
             }.catch {
-                emit(EachOrderUIState.Error(it as Exception))
+                emit(EachOrderUIState.GetFailure(it.toGetReqDomainFailure(orderId)))
             }
     }
 }

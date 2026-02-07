@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -16,20 +15,29 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.localgrubshop.R
 import com.example.localgrubshop.databinding.FragmentHomeBinding
+import com.example.localgrubshop.domain.mapper.firebase.GetReqDomainFailure
 import com.example.localgrubshop.ui.adapter.OrderHistoryAdapter
 import com.example.localgrubshop.ui.components.FilterBottomSheetFragment
-import com.example.localgrubshop.ui.sharedviewmodel.SharedHFToEOSFViewModel
-import com.google.firebase.database.DatabaseError
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
-    private var _binding: FragmentHomeBinding? = null // Data binding mutable variable
-    private val binding get() = _binding!! // Data binding immutable variable
-    private val viewModel: HomeViewModel by viewModels() // View model for its fragment
-    private lateinit var orderHistoryAdapter: OrderHistoryAdapter // Adapter for order history
-    private val sharedViewModel: SharedHFToEOSFViewModel by activityViewModels() // Shared view model between HomeFragment and EachOrderStatusFragment for data share
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
+    private val viewModel: HomeViewModel by viewModels()
+    private val orderHistoryAdapter: OrderHistoryAdapter by lazy {
+        OrderHistoryAdapter { order ->
+            val action = HomeFragmentDirections.actionHomeFragmentToEachOrderStatusFragment(order.id)
+            findNavController().navigate(action)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        viewModel.loadOrders()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,9 +50,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupRecyclerView() // Setup recycler view
-        observeViewModel() // Observe ui state and orders state from view model and take action according this
-        setupListeners() // setup listeners for click event and perform action
+        setupRecyclerView()
+        observeViewModel()
+        setupListeners()
     }
 
     private fun setupListeners() {
@@ -84,11 +92,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        orderHistoryAdapter = OrderHistoryAdapter { order ->
-            sharedViewModel.onSetOrder(order)
-            val action = HomeFragmentDirections.actionHomeFragmentToEachOrderStatusFragment()
-            findNavController().navigate(action)
-        }
         binding.orderHistoryRecyclerView.adapter = orderHistoryAdapter
     }
 
@@ -106,29 +109,28 @@ class HomeFragment : Fragment() {
                         }
 
                         is HomeUIState.Success -> {
-                            val orders = it.orders
-                            if (orders.isNotEmpty()) {
-                                viewModel.onSetHistoryOrder(orders)
-                                binding.orderHistoryContainer.visibility = View.VISIBLE
-                                binding.noOrdersTextView.visibility = View.GONE
-                            } else {
-                                binding.orderHistoryContainer.visibility = View.GONE
-                                binding.noOrdersTextView.visibility = View.VISIBLE
+                            viewModel.onSetOrders(it.orders)
+                            onSetLoading(false)
+                        }
+
+                        is HomeUIState.Failure -> {
+                            when(val failure = it.failure) {
+                                is GetReqDomainFailure.DataNotFount -> {
+                                    viewModel.onSetOrders(emptyList())
+                                }
+                                is GetReqDomainFailure.InvalidData -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                GetReqDomainFailure.Network -> {
+                                    showNoInternetDialog()
+                                }
+                                is GetReqDomainFailure.PermissionDenied -> {
+                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                }
+                                is GetReqDomainFailure.Unknown -> {
+                                    Toast.makeText(requireContext(), failure.cause.message, Toast.LENGTH_LONG).show()
+                                }
                             }
-                            viewModel.saveFCMToken()
-                            onSetLoading(false)
-                        }
-
-                        is HomeUIState.Error -> {
-                            Toast.makeText(
-                                requireContext(),
-                                it.e.message ?: "An error occurred",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            onSetLoading(false)
-                        }
-
-                        is HomeUIState.UpdateSuccess -> {
                             onSetLoading(false)
                         }
 
@@ -143,8 +145,15 @@ class HomeFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.historyOrder.collect {
-                    orderHistoryAdapter.submitList(it)
+                viewModel.orders.collect {
+                    if (it.isNotEmpty()) {
+                        binding.orderHistoryContainer.visibility = View.VISIBLE
+                        binding.noOrdersTextView.visibility = View.GONE
+                        orderHistoryAdapter.submitList(it)
+                    } else {
+                        binding.orderHistoryContainer.visibility = View.GONE
+                        binding.noOrdersTextView.visibility = View.VISIBLE
+                    }
                 }
             }
         }
