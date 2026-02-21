@@ -46,7 +46,6 @@ class DishRepositoryImpl @Inject constructor(
             }
 
             override fun onCancelled(error: DatabaseError) {
-                trySend(DishResult.Failure(ErrorMapper.map(error)))
                 close(ErrorMapper.map(error))
             }
         }

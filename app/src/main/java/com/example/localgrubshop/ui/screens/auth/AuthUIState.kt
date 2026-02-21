@@ -13,4 +13,5 @@ sealed interface AuthUIState {
     data class UpdateTokenSuccess(val isSuccess: Boolean): AuthUIState
     data class UpdateTokenFailure(val failure: WriteReqDomainFailure): AuthUIState
     data class DataLoadFailure(val message: String): AuthUIState
+    object NoInternet: AuthUIState
 }

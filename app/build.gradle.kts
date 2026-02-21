@@ -39,12 +39,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Expose CLOUDINARY_CLOUD_NAME to BuildConfig
-        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localProperties.getProperty("cloudinary_cloud_name")}\"")
+        buildConfigField(
+            "String",
+            "CLOUDINARY_CLOUD_NAME",
+            "\"${localProperties.getProperty("cloudinary_cloud_name")}\""
+        )
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -63,6 +68,7 @@ android {
         dataBinding = true
         viewBinding = true
     }
+
 }
 
 dependencies {

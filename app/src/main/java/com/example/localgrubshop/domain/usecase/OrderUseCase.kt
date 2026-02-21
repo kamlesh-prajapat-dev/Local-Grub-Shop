@@ -57,7 +57,7 @@ class OrderUseCase @Inject constructor(
         return when (val result = orderRepository.updateOrderStatus(orderId = orderId, newStatus = newStatus)) {
             is OrderResult.UpdateSuccess -> {
                 when(val result2 = userRepository.getToken(userId)) {
-                    is UserResult.Success -> {
+                    is UserResult.TokenGetSuccess -> {
                         val token = result2.token
                         notificationRepository.sendNotification(
                             NotificationRequest(
@@ -68,7 +68,7 @@ class OrderUseCase @Inject constructor(
                             )
                         )
                     }
-                    is UserResult.Error -> {
+                    is UserResult.Failure -> {
                         val workRequest = OneTimeWorkRequestBuilder<SenderNotificationWorker>()
                             .setInputData(
                                 workDataOf("ORDER_ID" to orderId,
@@ -78,6 +78,8 @@ class OrderUseCase @Inject constructor(
 
                         workManager.enqueue(workRequest)
                     }
+
+                    else -> Unit
                 }
 
                 EachOrderUIState.Success(result.flag)

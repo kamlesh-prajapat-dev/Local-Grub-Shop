@@ -14,12 +14,12 @@ import java.util.Date
 import java.util.Locale
 
 class FilterBottomSheetFragment(
-    private val onFilterSelected: (String?, Date?, Date?) -> Unit // callback function for filter selection
+    private val onFilterSelected: (String?, Date?, Date?) -> Unit
 ) : BottomSheetDialogFragment() {
-    private var _binding: BottomSheetFilterBinding? = null // binding mutable variable
-    private val binding get() = _binding!! // binding immutable variable
-    private var startDate: Date? = null // start date for filter
-    private var endDate: Date? = null // end date for filter
+    private var _binding: BottomSheetFilterBinding? = null
+    private val binding get() = _binding!!
+    private var startDate: Date? = null
+    private var endDate: Date? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,

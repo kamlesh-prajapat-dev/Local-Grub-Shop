@@ -10,6 +10,7 @@ import com.example.localgrubshop.domain.repository.UserRepository
 import com.example.localgrubshop.domain.usecase.DishUseCase
 import com.example.localgrubshop.domain.usecase.OrderUseCase
 import com.example.localgrubshop.domain.usecase.ShopOwnerUseCase
+import com.example.localgrubshop.domain.usecase.UserUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -55,5 +56,15 @@ class UseCasesModule {
         dishRepository: DishRepository
     ): DishUseCase{
         return DishUseCase(dishRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserUseCase(
+        userRepository: UserRepository
+    ): UserUseCase {
+        return UserUseCase(
+            userRepository
+        )
     }
 }

@@ -44,7 +44,6 @@ class OrderRepositoryImpl @Inject constructor(
             }
 
             override fun onCancelled(error: DatabaseError) {
-                trySend(OrderResult.Failure(ErrorMapper.map(error)))
                 close(ErrorMapper.map(error))
             }
         }

@@ -23,7 +23,12 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> get() = _orders.asStateFlow()
+
+    private val _filteredList = MutableStateFlow<List<Order>>(emptyList())
+    val filteredList: StateFlow<List<Order>> get() = _filteredList.asStateFlow()
+
     fun onSetOrders(orders: List<Order>) {
+        _filteredList.value = orders
         _orders.value = orders
     }
     private val _uiState = MutableStateFlow<HomeUIState>(HomeUIState.Idle)
@@ -51,7 +56,7 @@ class HomeViewModel @Inject constructor(
             val dateMatch = isDateInRange(Date(order.placeAt), startDate, endDate)
             statusMatch && dateMatch
         }
-        _orders.value = filteredList
+        _filteredList.value = filteredList
     }
     private fun isDateInRange(
         date: Date,

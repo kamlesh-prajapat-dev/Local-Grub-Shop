@@ -1,5 +1,6 @@
 package com.example.localgrubshop.ui.screens.auth
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.example.localgrubshop.R
 import com.example.localgrubshop.databinding.FragmentAuthBinding
 import com.example.localgrubshop.domain.models.failure.GetReqDomainFailure
 import com.example.localgrubshop.domain.models.failure.WriteReqDomainFailure
@@ -50,8 +52,8 @@ class AuthFragment : Fragment() {
         }
 
         binding.btnLogin.setOnClickListener {
-            val username = binding.etEmail.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
+            val username = binding.etEmail.text.toString()
+            val password = binding.etPassword.text.toString()
             viewModel.login(username, password)
         }
     }
@@ -60,38 +62,58 @@ class AuthFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect {
-                    when(it) {
+                    when (it) {
                         is AuthUIState.Failure -> {
-                            when(val failure = it.failure) {
+                            when (val failure = it.failure) {
                                 GetReqDomainFailure.Cancelled -> Unit
                                 is GetReqDomainFailure.DataNotFound -> {
                                     binding.etPassword.error = failure.message
                                 }
+
                                 GetReqDomainFailure.InvalidRequest -> {
-                                    Toast.makeText(requireContext(), "Invalid Request", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Invalid Request",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 GetReqDomainFailure.NoInternet -> {
-                                    Toast.makeText(requireContext(), "No Internet", Toast.LENGTH_LONG).show()
+                                    showNoInternetDialog()
                                 }
+
                                 is GetReqDomainFailure.PermissionDenied -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 is GetReqDomainFailure.Unknown -> {
-                                    Toast.makeText(requireContext(), failure.cause.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.cause.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                             onSetLoading(false)
                         }
+
                         AuthUIState.Idle -> {
                             onSetLoading(false)
                         }
+
                         AuthUIState.Loading -> {
                             onSetLoading(true)
                         }
+
                         is AuthUIState.Success -> {
                             viewModel.saveToken(it.adminUser)
                             onSetLoading(false)
                         }
+
                         is AuthUIState.ValidationError -> {
                             val validateMsgForUsername = it.validateMsgForUsername
                             val validateMsgForPassword = it.validateMsgForPassword
@@ -106,54 +128,114 @@ class AuthFragment : Fragment() {
                         }
 
                         is AuthUIState.UpdateTokenFailure -> {
-                            when(val failure = it.failure) {
+                            when (val failure = it.failure) {
                                 WriteReqDomainFailure.Aborted -> {
-                                    Toast.makeText(requireContext(), "Aborted", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(requireContext(), "Aborted", Toast.LENGTH_LONG)
+                                        .show()
                                 }
-                                is WriteReqDomainFailure.AlreadyExists -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
-                                }
-                                is WriteReqDomainFailure.Cancelled -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
-                                }
-                                WriteReqDomainFailure.DataLoss -> {
-                                    Toast.makeText(requireContext(), "Data Loss", Toast.LENGTH_LONG).show()
-                                }
-                                WriteReqDomainFailure.DeadlineExceeded -> {
-                                    Toast.makeText(requireContext(), "Deadline Exceed", Toast.LENGTH_LONG).show()
-                                }
-                                WriteReqDomainFailure.FailedPrecondition -> {
-                                    Toast.makeText(requireContext(), "Failed Precondition", Toast.LENGTH_LONG).show()
-                                }
-                                WriteReqDomainFailure.Internal -> {
-                                    Toast.makeText(requireContext(), "Internal", Toast.LENGTH_LONG).show()
-                                }
-                                WriteReqDomainFailure.InvalidArgument -> {
-                                    Toast.makeText(requireContext(), "Invalid Argument", Toast.LENGTH_LONG).show()
-                                }
-                                WriteReqDomainFailure.NetworkUnavailable -> {
-                                    Toast.makeText(requireContext(), "Network Unavailable", Toast.LENGTH_LONG).show()
 
+                                is WriteReqDomainFailure.AlreadyExists -> {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
+                                is WriteReqDomainFailure.Cancelled -> {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+
+                                WriteReqDomainFailure.DataLoss -> {
+                                    Toast.makeText(requireContext(), "Data Loss", Toast.LENGTH_LONG)
+                                        .show()
+                                }
+
+                                WriteReqDomainFailure.DeadlineExceeded -> {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Deadline Exceed",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+
+                                WriteReqDomainFailure.FailedPrecondition -> {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Failed Precondition",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+
+                                WriteReqDomainFailure.Internal -> {
+                                    Toast.makeText(requireContext(), "Internal", Toast.LENGTH_LONG)
+                                        .show()
+                                }
+
+                                WriteReqDomainFailure.InvalidArgument -> {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Invalid Argument",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+
+                                WriteReqDomainFailure.NetworkUnavailable -> {
+                                    showNoInternetDialog()
+                                }
+
                                 is WriteReqDomainFailure.NotFound -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 WriteReqDomainFailure.OutOfRange -> {}
                                 is WriteReqDomainFailure.PermissionDenied -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 WriteReqDomainFailure.ResourceExhausted -> {
-                                    Toast.makeText(requireContext(), "Resource Exhausted", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Resource Exhausted",
+                                        Toast.LENGTH_LONG
+                                    ).show()
 
                                 }
+
                                 is WriteReqDomainFailure.Unauthenticated -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 WriteReqDomainFailure.Unimplemented -> {
-                                    Toast.makeText(requireContext(), "Unimplemented", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Unimplemented",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 is WriteReqDomainFailure.Unknown -> {
-                                    Toast.makeText(requireContext(), failure.cause.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.cause.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                             onSetLoading(false)
@@ -169,11 +251,28 @@ class AuthFragment : Fragment() {
                             Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
                             onSetLoading(false)
                         }
+
+                        AuthUIState.NoInternet -> {
+                            showNoInternetDialog()
+                            onSetLoading(false)
+                        }
                     }
                 }
             }
         }
     }
+
+    private fun showNoInternetDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.no_internet_connection)
+            .setMessage(R.string.check_internet_connection)
+            .setPositiveButton(R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
+
 
     private fun onSetLoading(isLoading: Boolean) {
         binding.progressBar.isVisible = isLoading

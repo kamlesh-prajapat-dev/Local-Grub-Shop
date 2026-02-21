@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localgrubshop.data.models.AdminUser
 import com.example.localgrubshop.domain.usecase.ShopOwnerUseCase
+import com.example.localgrubshop.utils.NetworkUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val shopOwnerUseCase: ShopOwnerUseCase
+    private val shopOwnerUseCase: ShopOwnerUseCase,
+    private val networkUtils: NetworkUtils
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<AuthUIState>(AuthUIState.Idle)
     val uiState: StateFlow<AuthUIState> get() = _uiState.asStateFlow()
@@ -33,6 +35,11 @@ class AuthViewModel @Inject constructor(
             return
         }
 
+        if (!networkUtils.isInternetAvailable()) {
+            _uiState.value = AuthUIState.NoInternet
+            return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             val result = shopOwnerUseCase.login(username, password)
             _uiState.value = result
@@ -41,6 +48,11 @@ class AuthViewModel @Inject constructor(
 
     fun saveToken(user: AdminUser) {
         _uiState.value = AuthUIState.Loading
+
+        if (!networkUtils.isInternetAvailable()) {
+            _uiState.value = AuthUIState.NoInternet
+            return
+        }
 
         viewModelScope.launch(Dispatchers.IO) {
             val token = shopOwnerUseCase.getFcmToken()

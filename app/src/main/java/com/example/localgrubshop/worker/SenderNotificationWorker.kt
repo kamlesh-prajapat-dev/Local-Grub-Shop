@@ -27,7 +27,7 @@ class SenderNotificationWorker @AssistedInject constructor(
 
         return try {
             when(val result = userRepository.getToken(userID)) {
-                is UserResult.Success -> {
+                is UserResult.TokenGetSuccess -> {
                     val token = result.token
                     notificationRepository.sendNotification(
                         NotificationRequest(
@@ -40,9 +40,10 @@ class SenderNotificationWorker @AssistedInject constructor(
                     Result.success()
                 }
 
-                is UserResult.Error -> {
+                is UserResult.Failure -> {
                     Result.failure()
                 }
+                else -> Result.failure()
             }
 
         } catch (e: Exception) {

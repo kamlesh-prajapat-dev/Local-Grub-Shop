@@ -4,4 +4,5 @@ import com.example.localgrubshop.domain.models.result.UserResult
 
 interface UserRepository {
     suspend fun getToken(userId: String): UserResult
+    suspend fun getUserByUid(uid: String): UserResult
 }

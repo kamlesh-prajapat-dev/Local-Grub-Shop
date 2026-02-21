@@ -69,9 +69,9 @@ class SplashFragment : Fragment() {
         }
     }
 
-    private suspend fun navigateAction(work: () -> Unit) {
-        delay(2000)
+    private fun navigateAction(work: () -> Unit) {
         work()
+        viewModel.reset()
     }
 
     private fun onSetLoading() {

@@ -27,5 +27,5 @@ object ShopOwnerFields {
 
 object UserFields {
     const val COLLECTION = "users"
-    const val TOKEN = "fcmToken"
+    const val TOKEN_COLLECTION = "tokens"
 }

@@ -28,7 +28,8 @@ class HomeFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModels()
     private val orderHistoryAdapter: OrderHistoryAdapter by lazy {
         OrderHistoryAdapter { order ->
-            val action = HomeFragmentDirections.actionHomeFragmentToEachOrderStatusFragment(order.id)
+            val action =
+                HomeFragmentDirections.actionHomeFragmentToEachOrderStatusFragment(order.id)
             findNavController().navigate(action)
         }
     }
@@ -69,6 +70,7 @@ class HomeFragment : Fragment() {
                     showPopupMenu(binding.topAppBar.findViewById(R.id.menuBar))
                     true
                 }
+
                 else -> false
             }
         }
@@ -85,6 +87,7 @@ class HomeFragment : Fragment() {
                     findNavController().navigate(action)
                     true
                 }
+
                 else -> false
             }
         }
@@ -114,21 +117,37 @@ class HomeFragment : Fragment() {
                         }
 
                         is HomeUIState.Failure -> {
-                            when(val failure = it.failure) {
+                            when (val failure = it.failure) {
                                 is GetReqDomainFailure.DataNotFount -> {
                                     viewModel.onSetOrders(emptyList())
                                 }
+
                                 is GetReqDomainFailure.InvalidData -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 GetReqDomainFailure.Network -> {
                                     showNoInternetDialog()
                                 }
+
                                 is GetReqDomainFailure.PermissionDenied -> {
-                                    Toast.makeText(requireContext(), failure.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
+
                                 is GetReqDomainFailure.Unknown -> {
-                                    Toast.makeText(requireContext(), failure.cause.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        failure.cause.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                             onSetLoading(false)
@@ -138,6 +157,14 @@ class HomeFragment : Fragment() {
                             showNoInternetDialog()
                             onSetLoading(false)
                         }
+
+                        is HomeUIState.UserGetFailure -> {
+                            onSetLoading(false)
+                        }
+
+                        is HomeUIState.UserGetSuccess -> {
+                            onSetLoading(false)
+                        }
                     }
                 }
             }
@@ -145,13 +172,13 @@ class HomeFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.orders.collect {
+                viewModel.filteredList.collect {
                     if (it.isNotEmpty()) {
-                        binding.orderHistoryContainer.visibility = View.VISIBLE
+                        binding.orderItemsRecyclerViewContainer.visibility = View.VISIBLE
                         binding.noOrdersTextView.visibility = View.GONE
                         orderHistoryAdapter.submitList(it)
                     } else {
-                        binding.orderHistoryContainer.visibility = View.GONE
+                        binding.orderItemsRecyclerViewContainer.visibility = View.GONE
                         binding.noOrdersTextView.visibility = View.VISIBLE
                     }
                 }

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.localgrubshop.data.models.Order
+import com.example.localgrubshop.data.models.User
 import com.example.localgrubshop.databinding.OrderHistoryItemBinding
 import com.example.localgrubshop.utils.OrderStatus
 import java.text.SimpleDateFormat

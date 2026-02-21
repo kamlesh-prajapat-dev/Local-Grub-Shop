@@ -7,6 +7,7 @@ import com.example.localgrubshop.utils.DataNotFoundException
 import com.example.localgrubshop.utils.ShopOwnerFields
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,13 +24,13 @@ class ShopOwnerRepositoryImpl @Inject constructor(
         docId: String
     ): ShopOwnerResult {
         if (token.isBlank()) {
-            return ShopOwnerResult.Error(
+            return ShopOwnerResult.Error (
                 IllegalArgumentException("FCM token cannot be empty")
             )
         }
 
         if (docId.isBlank()) {
-            return ShopOwnerResult.Error(
+            return ShopOwnerResult.Error (
                 IllegalArgumentException("FCM token cannot be empty")
             )
         }
@@ -45,9 +46,7 @@ class ShopOwnerRepositoryImpl @Inject constructor(
                 .collection(ShopOwnerFields.TOKEN_COLLECTION_NAME)
                 .document(docId)
                 .set(
-                    mapOf(
-                        ShopOwnerFields.TOKEN to tokenData
-                    ),
+                    tokenData,
                     SetOptions.merge()
                 )
                 .await()
@@ -70,12 +69,12 @@ class ShopOwnerRepositoryImpl @Inject constructor(
                 .collection(ShopOwnerFields.COLLECTION)
                 .whereEqualTo("username", username)
                 .limit(1)
-                .get()
+                .get(Source.SERVER)
                 .await()
 
             if (snapshot.isEmpty) {
                 return ShopOwnerResult.Error(
-                    DataNotFoundException("Invalid username or password")
+                    DataNotFoundException("Invalid username.")
                 )
             }
 
@@ -89,12 +88,11 @@ class ShopOwnerRepositoryImpl @Inject constructor(
                 )
             } else if (adminUser.password != password) {
                 ShopOwnerResult.Error(
-                    DataNotFoundException("Invalid username or password")
+                    DataNotFoundException("Invalid password.")
                 )
             } else {
                 ShopOwnerResult.Success(adminUser)
             }
-
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
