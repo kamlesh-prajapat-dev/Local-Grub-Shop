@@ -4,10 +4,12 @@ import androidx.work.WorkManager
 import com.example.localgrubshop.data.local.LocalDatabase
 import com.example.localgrubshop.domain.repository.DishRepository
 import com.example.localgrubshop.domain.repository.NotificationRepository
+import com.example.localgrubshop.domain.repository.OfferRepository
 import com.example.localgrubshop.domain.repository.OrderRepository
 import com.example.localgrubshop.domain.repository.ShopOwnerRepository
 import com.example.localgrubshop.domain.repository.UserRepository
 import com.example.localgrubshop.domain.usecase.DishUseCase
+import com.example.localgrubshop.domain.usecase.OfferUseCase
 import com.example.localgrubshop.domain.usecase.OrderUseCase
 import com.example.localgrubshop.domain.usecase.ShopOwnerUseCase
 import com.example.localgrubshop.domain.usecase.UserUseCase
@@ -65,6 +67,16 @@ class UseCasesModule {
     ): UserUseCase {
         return UserUseCase(
             userRepository
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideOfferUseCase(
+        offerRepository: OfferRepository
+    ): OfferUseCase {
+        return OfferUseCase(
+            offerRepository =  offerRepository
         )
     }
 }

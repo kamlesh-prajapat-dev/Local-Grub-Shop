@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.cancellation.CancellationException
 
 @Singleton
 class DishUseCase @Inject constructor(
@@ -28,6 +27,7 @@ class DishUseCase @Inject constructor(
 
                     is DishResult.Failure ->
                         MenuUIState.GetFailure(result.e.toGetReqDomainFailure("Dishes Data"))
+
                     else -> MenuUIState.Idle
                 }
             }
@@ -38,7 +38,7 @@ class DishUseCase @Inject constructor(
 
 
     suspend fun deleteDish(dishId: String): MenuUIState {
-        return when(val result = dishRepository.deleteDish(dishId = dishId)) {
+        return when (val result = dishRepository.deleteDish(dishId = dishId)) {
             is DishResult.DeleteSuccess -> {
                 MenuUIState.DeleteSuccess(result.isSuccess)
             }
@@ -52,7 +52,8 @@ class DishUseCase @Inject constructor(
     }
 
     suspend fun updateStockStatus(dishId: String, inStock: Boolean): MenuUIState {
-        return when(val result = dishRepository.updateStockStatus(dishId = dishId, inStock = inStock)) {
+        return when (val result =
+            dishRepository.updateStockStatus(dishId = dishId, inStock = inStock)) {
             is DishResult.StockUpdateSuccess -> {
                 MenuUIState.StockUpdateSuccess(result.isSuccess)
             }
@@ -66,7 +67,7 @@ class DishUseCase @Inject constructor(
     }
 
     suspend fun updateDish(newDish: FetchedDish): DishUIState {
-        return when(val result = dishRepository.updateDish(newDish = newDish)) {
+        return when (val result = dishRepository.updateDish(newDish = newDish)) {
             is DishResult.UpdateSuccess -> {
                 DishUIState.Success(result.dish)
             }
@@ -80,7 +81,7 @@ class DishUseCase @Inject constructor(
     }
 
     suspend fun addDish(newDish: NewDish): DishUIState {
-        return when(val result = dishRepository.addDish(newDish = newDish)) {
+        return when (val result = dishRepository.addDish(newDish = newDish)) {
             is DishResult.AddSuccess -> {
                 val newDish = result.dish
                 val id = result.id

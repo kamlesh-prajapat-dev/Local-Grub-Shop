@@ -88,6 +88,12 @@ class HomeFragment : Fragment() {
                     true
                 }
 
+                R.id.offer -> {
+                    val action = HomeFragmentDirections.actionHomeFragmentToOfferDashboardFragment()
+                    findNavController().navigate(action)
+                    true
+                }
+
                 else -> false
             }
         }

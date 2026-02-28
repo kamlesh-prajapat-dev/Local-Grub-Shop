@@ -49,6 +49,10 @@
         <action
             android:id="@+id/action_homeFragment_to_eachOrderStatusFragment"
             app:destination="@id/eachOrderStatusFragment"/>
+
+        <action
+            android:id="@+id/action_homeFragment_to_offerDashboardFragment"
+            app:destination="@id/offerDashboardFragment" />
     </fragment>
 
     <fragment
@@ -83,6 +87,44 @@
         <argument
             android:name="orderId"
             app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/offerDashboardFragment"
+        android:name="com.example.localgrubshop.ui.screens.offerdashboard.OfferDashboardFragment"
+        android:label="Offer Dashboard"
+        tools:layout="@layout/fragment_offer_dashboard">
+        <action
+            android:id="@+id/action_offerDashboardFragment_to_offerBuilderFragment"
+            app:destination="@id/offerBuilderFragment" />
+        <action
+            android:id="@+id/action_offerDashboardFragment_to_offerDetailsFragment"
+            app:destination="@id/offerDetailsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/offerBuilderFragment"
+        android:name="com.example.localgrubshop.ui.screens.offerbuilder.OfferBuilderFragment"
+        android:label="Offer Builder"
+        tools:layout="@layout/fragment_offer_builder">
+        <argument
+            android:name="offer"
+            app:argType="com.example.localgrubshop.data.models.GetOffer"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/offerDetailsFragment"
+        android:name="com.example.localgrubshop.ui.screens.offerdetails.OfferDetailsFragment"
+        android:label="Offer Details"
+        tools:layout="@layout/fragment_offer_details">
+        <argument
+            android:name="offer"
+            app:argType="com.example.localgrubshop.data.models.GetOffer" />
+        <action
+            android:id="@+id/action_offerDetailsFragment_to_offerBuilderFragment"
+            app:destination="@id/offerBuilderFragment" />
     </fragment>
 
 </navigation>

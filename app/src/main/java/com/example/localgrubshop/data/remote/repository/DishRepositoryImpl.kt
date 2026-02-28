@@ -67,7 +67,7 @@ class DishRepositoryImpl @Inject constructor(
             val dishId = ref.key
                 ?: throw IllegalStateException("Failed to generate dish id")
 
-            ref.setValue(newDish).await()
+            ref.child(dishId).setValue(newDish).await()
 
             DishResult.AddSuccess(
                 dish = newDish,
